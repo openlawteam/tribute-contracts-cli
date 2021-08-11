@@ -56,25 +56,22 @@ const newManagingProposal = async (
       const data = res.data;
       console.log(`SNAP: ${JSON.stringify(data)}`);
       const message = {
-        timestamp: data.timestamp,
-        space: data.space,
         payload: {
-          name: data.payload.name,
           body: data.payload.body,
-          //metadata: data.payload.metadata,
           choices: data.payload.choices,
-          snapshot: data.payload.snapshot,
-          start: data.payload.start,
           end: data.payload.end,
+          name: data.payload.name,
+          snapshot: data.payload.snapshot.toString(),
+          start: data.payload.start,
         },
-      };
-      console.log(`MSG: ${JSON.stringify(message)}`);
-      const encodedData = {
-        ...prepareProposalMessage(message, new Web3("")),
         sig: res.sig,
+        space: data.space,
+        timestamp: parseInt(data.timestamp),
       };
-      console.log(`ENC: ${JSON.stringify(encodedData)}`);
 
+      console.log(`MSG: ${JSON.stringify(message)}`);
+      const encodedData = prepareVoteProposalData(message, new Web3(""));
+      console.log(`ENC: ${encodedData}`);
       await contract.submitProposal(
         opts.dao,
         sha3(res.uniqueId),
@@ -89,10 +86,8 @@ const newManagingProposal = async (
         },
         configKeys,
         configValues,
-        encodedData
-          ? ethers.utils.toUtf8Bytes(JSON.stringify(encodedData))
-          : ethers.utils.toUtf8Bytes(""),
-        { from: wallet.address, gasPrice: "0x1" }
+        encodedData ? encodedData : ethers.utils.toUtf8Bytes(""),
+        { from: wallet.address }
       );
       return sha3(res.uniqueId);
     })
