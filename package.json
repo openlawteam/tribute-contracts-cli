@@ -1,0 +1,24 @@
+{
+  "name": "tribute-contracts-cli",
+  "version": "0.1.0",
+  "description": "",
+  "main": "cli.js",
+  "scripts": {
+    "compile": "truffle compile",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "dev@openlaw.io",
+  "license": "MIT",
+  "dependencies": {
+    "@openlaw/snapshot-js-erc712": "1.1.2",
+    "@truffle/hdwallet-provider": "^1.4.3",
+    "commander": "^8.1.0",
+    "dotenv": "^10.0.0",
+    "eth-sig-util": "3.0.1",
+    "ethereumjs-util": "7.1.0",
+    "ethers": "5.4.1",
+    "tribute-contracts": "1.1.0",
+    "truffle": "^5.4.5",
+    "web3": "^1.4.0"
+  }
+}
