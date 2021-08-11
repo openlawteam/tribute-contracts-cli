@@ -125,11 +125,7 @@ const signAndSendProposal = async (proposal, provider, wallet) => {
 
   return {
     data: message,
-    erc712Message: {
-      ...erc712Message,
-      submitter: wallet.address,
-      sig: signature,
-    },
+    sig: signature,
     uniqueId: resp.data.uniqueId,
     uniqueIdDraft: resp.data.uniqueIdDraft || "",
   };

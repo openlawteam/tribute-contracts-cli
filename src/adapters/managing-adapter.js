@@ -53,12 +53,11 @@ const newManagingProposal = async (
     wallet
   )
     .then(async (res) => {
-      console.log(res.data);
       const data = res.data;
+      console.log(`SNAP: ${JSON.stringify(data)}`);
       const message = {
         timestamp: data.timestamp,
         space: data.space,
-        submitter: wallet.address,
         payload: {
           name: data.payload.name,
           body: data.payload.body,
@@ -68,11 +67,14 @@ const newManagingProposal = async (
           start: data.payload.start,
           end: data.payload.end,
         },
-        sig: res.erc712Message.sig,
       };
-      console.log(message);
-      const encodedData = prepareProposalMessage(message, new Web3(""));
-      console.log(encodedData);
+      console.log(`MSG: ${JSON.stringify(message)}`);
+      const encodedData = {
+        ...prepareProposalMessage(message, new Web3("")),
+        sig: res.sig,
+      };
+      console.log(`ENC: ${JSON.stringify(encodedData)}`);
+
       await contract.submitProposal(
         opts.dao,
         sha3(res.uniqueId),
@@ -87,7 +89,9 @@ const newManagingProposal = async (
         },
         configKeys,
         configValues,
-        encodedData ? encodedData : [],
+        encodedData
+          ? ethers.utils.toUtf8Bytes(JSON.stringify(encodedData))
+          : ethers.utils.toUtf8Bytes(""),
         { from: wallet.address, gasPrice: "0x1" }
       );
       return sha3(res.uniqueId);
