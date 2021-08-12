@@ -3,17 +3,21 @@ const { ethers } = require("ethers");
 const toBytes32 = ethers.utils.formatBytes32String;
 const { sha3 } = require("tribute-contracts/utils/ContractUtil");
 
-const {
-  prepareVoteProposalData,
-  prepareProposalMessage,
-} = require("@openlaw/snapshot-js-erc712");
+const { prepareVoteProposalData } = require("@openlaw/snapshot-js-erc712");
 
 const { entryDao } = require("tribute-contracts/utils/DeploymentUtil");
 const { getContract } = require("../utils/contract");
-const { newProposal } = require("../utils/snapshot");
+const { submitSnapshotProposal } = require("../utils/snapshot");
 const { parseDaoFlags } = require("../core/dao-registry");
 
-const newManagingProposal = async (
+const printEnvConfigs = (opts) => {
+  console.log(`Network:\t\t${opts.network}`);
+  console.log(`DAO:\t\t\t${opts.dao}`);
+  console.log(`Space:\t\t\t${opts.space}`);
+  console.log(`ManagingContract:\t${opts.contract}`);
+};
+
+const submitManagingProposal = async (
   adapterName,
   adapterAddress,
   keys,
@@ -22,16 +26,13 @@ const newManagingProposal = async (
   data,
   opts
 ) => {
-  console.log(`New managing proposal`);
-  console.log(`\tNetwork:\t\t${opts.network}`);
-  console.log(`\tDAO:\t\t\t${opts.dao}`);
-  console.log(`\tSpace:\t\t\t${opts.space}`);
-  console.log(`\tManagingContract:\t${opts.contract}`);
-  console.log(`\tAdapter:\t\t${adapterName} @ ${adapterAddress}`);
-  console.log(`\tAccessFlags:\t\t${aclFlags}`);
-  console.log(`\tKeys:\t\t\t${keys}`);
-  console.log(`\tValues:\t\t\t${values}`);
-  console.log(`\tData:\t\t\t${data ? data : "n/a"}`);
+  console.log(`\n ::: Submitting Managing proposal...\n`);
+  printEnvConfigs(opts);
+  console.log(`Adapter:\t\t${adapterName} @ ${adapterAddress}`);
+  console.log(`AccessFlags:\t\t${aclFlags}`);
+  console.log(`Keys:\t\t\t${keys}`);
+  console.log(`Values:\t\t\t${values}`);
+  console.log(`Data:\t\t\t${data ? data : "n/a"}\n`);
 
   const configKeys = keys.split(",").map((k) => toBytes32(k));
   const configValues = values.split(",").map((v) => v);
@@ -42,7 +43,7 @@ const newManagingProposal = async (
     opts.contract
   );
 
-  await newProposal(
+  await submitSnapshotProposal(
     `Adapter: ${adapterName}`,
     "Creates/Update adapter",
     opts.network,
@@ -54,7 +55,8 @@ const newManagingProposal = async (
   )
     .then(async (res) => {
       const data = res.data;
-      console.log(`SNAP: ${JSON.stringify(data)}`);
+      if (opts.debug)
+        console.log(`Snapshot Message: ${JSON.stringify(data)}\n`);
       const message = {
         payload: {
           body: data.payload.body,
@@ -69,9 +71,9 @@ const newManagingProposal = async (
         timestamp: parseInt(data.timestamp),
       };
 
-      console.log(`MSG: ${JSON.stringify(message)}`);
+      if (opts.debug) console.log(`DAO Message: ${JSON.stringify(message)}\n`);
       const encodedData = prepareVoteProposalData(message, new Web3(""));
-      console.log(`ENC: ${encodedData}`);
+      if (opts.debug) console.log(`Encoded DAO message: ${encodedData}\n`);
       await contract.submitProposal(
         opts.dao,
         sha3(res.uniqueId),
@@ -91,7 +93,26 @@ const newManagingProposal = async (
       );
       return sha3(res.uniqueId);
     })
-    .then((proposalId) => console.log(`New DAO proposal: ${proposalId}`));
+    .then((proposalId) => {
+      console.log(`New DAO Proposal Id: ${proposalId}\n`);
+      console.log(`::: Managing proposal submitted!\n`);
+    });
 };
 
-module.exports = { newManagingProposal };
+const processManagingProposal = async (proposalId, opts) => {
+  console.log(`\n::: Processing Managing proposal...\n`);
+  printEnvConfigs(opts);
+  console.log(`ProposalId:\t\t${proposalId}`);
+
+  const { contract, wallet } = getContract(
+    "ManagingContract",
+    opts.network,
+    opts.contract
+  );
+
+  await contract.processProposal(opts.dao, proposalId, {
+    from: wallet.address,
+  });
+};
+
+module.exports = { submitManagingProposal, processManagingProposal };

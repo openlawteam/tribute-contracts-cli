@@ -13,6 +13,7 @@ const configs = {
   network: process.env.ETHEREUM_NETWORK,
   space: process.env.SNAPSHOT_HUB_SPACE,
   snapshotHubApi: process.env.SNAPSHOT_HUB_API_URL,
+  debug: process.env.DEBUG === "true"
 };
 
 module.exports = { configs };

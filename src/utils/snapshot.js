@@ -3,11 +3,6 @@ const {
   getDomainDefinition,
   getSpace,
   prepareProposalMessage,
-  SnapshotMessageBase,
-  SnapshotMessageProposal,
-  SnapshotProposalData,
-  SnapshotSubmitBaseReturn,
-  SnapshotSubmitProposalReturn,
   SnapshotType,
   submitMessage,
 } = require("@openlaw/snapshot-js-erc712");
@@ -131,7 +126,7 @@ const signAndSendProposal = async (proposal, provider, wallet) => {
   };
 };
 
-const newProposal = (
+const submitSnapshotProposal = (
   title,
   description,
   network,
@@ -161,7 +156,7 @@ const newProposal = (
     wallet
   )
     .then((res) => {
-      console.log(`New snapshot proposal: ${res.uniqueId}`);
+      console.log(`New Snapshot Proposal Id: ${res.uniqueId}\n`);
       return res;
     })
     .catch((err) => {
@@ -174,4 +169,4 @@ const newProposal = (
     });
 };
 
-module.exports = { newProposal };
+module.exports = { submitSnapshotProposal };

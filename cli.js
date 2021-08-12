@@ -2,7 +2,11 @@
 
 require("dotenv").config({ path: ".env" });
 
-const { newManagingProposal } = require("./src/adapters/managing-adapter");
+const {
+  submitManagingProposal,
+  processManagingProposal,
+} = require("./src/adapters/managing-adapter");
+
 const { configs } = require("./cli-config");
 const { Command } = require("commander");
 const program = new Command();
@@ -23,11 +27,11 @@ const main = () => {
 
   program
     .command(
-      "adapter-add <adapterId> <adapterAddress> <keys> <values> <aclFlags> [data]"
+      "submit-managing-proposal <adapterId> <adapterAddress> <keys> <values> <aclFlags> [data]"
     )
     .description("Submit a new managing proposal.")
-    .action(async (adapterName, adapterAddress, keys, values, aclFlags, data) =>
-      newManagingProposal(
+    .action((adapterName, adapterAddress, keys, values, aclFlags, data) =>
+      submitManagingProposal(
         adapterName,
         adapterAddress,
         keys,
@@ -36,6 +40,13 @@ const main = () => {
         data,
         { ...program.opts(), ...configs }
       )
+    );
+
+  program
+    .command("process-managing-proposal <proposalId>")
+    .description("Process an existing managing proposal.")
+    .action((proposalId) =>
+      processManagingProposal(proposalId, { ...program.opts(), ...configs })
     );
 
   program
