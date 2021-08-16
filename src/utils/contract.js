@@ -45,11 +45,11 @@ const attachContract = (address, abi, wallet) => {
   return contract.connect(wallet);
 };
 
-const getContract = (name, network, address) => {
+const getContract = (name, network, contract) => {
   const provider = getProvider(network);
   const wallet = openWallet(provider);
   return {
-    contract: attachContract(address, getABI(name), wallet),
+    contract: attachContract(contract, getABI(name), wallet),
     provider,
     wallet,
   };

@@ -16,15 +16,15 @@ const notice = (msg) => {
   console.log(chalk.green(msg));
 };
 
-const error = (msg) => {
-  console.log(chalk.red(msg));
+const error = (msg, err) => {
+  console.log(chalk.red(msg), err);
 };
 
-const logEnvConfigs = (opts) => {
-  info(`Network:\t\t${opts.network}`);
-  info(`DAO:\t\t\t${opts.dao}`);
-  info(`Space:\t\t\t${opts.space}`);
-  info(`Contract:\t${opts.contract}`);
+const logEnvConfigs = (configs, contract) => {
+  info(`Network:\t\t${configs.network}`);
+  info(`DAO:\t\t\t${configs.contracts.DaoRegistry}`);
+  info(`Space:\t\t\t${configs.space}`);
+  info(`Contract:\t\t${contract}`);
 };
 
 module.exports = { warn, success, notice, error, info, logEnvConfigs };

@@ -1,53 +1,77 @@
 #!/usr/bin/env node
 
 require("dotenv").config({ path: ".env" });
+const { configs } = require("./cli-config");
 
 const {
   submitManagingProposal,
   processManagingProposal,
 } = require("./src/adapters/managing-adapter");
 
-const { configs } = require("./cli-config");
+const {
+  voteOnProposal,
+  submitVoteResult,
+} = require("./src/adapters/offchain-voting-adapter");
+
+const inquirer = require("inquirer");
 const { Command } = require("commander");
+const { notice } = require("./src/utils/logging");
 const program = new Command();
 program.version("0.0.1");
 
-const supportedContracts = ["ManagingContract"];
-
 const main = () => {
-  program.option(
-    "-C, --contract <contract>",
-    "The 42 digits startign with 0x contract address which CLI should interact with."
-  );
-
   program
     .command("list")
-    .description("List all contracts to interact with.")
-    .action(() => supportedContracts.map((c) => console.log(c)));
+    .description("List all contracts available to interact with.")
+    .action(() => {
+      notice("Available contracts to interact...");
+      Object.keys(configs.contracts).map((c) =>
+        console.log(`${c} @ ${configs.contracts[c]}`)
+      );
+    });
 
   program
     .command(
-      "submit-managing-proposal <adapterId> <adapterAddress> <keys> <values> <aclFlags> [data]"
+      "submit-managing-proposal <adapterId> <adapterAddress> <aclFlags> [keys] [values] [data]"
     )
     .description("Submit a new managing proposal.")
-    .action((adapterName, adapterAddress, keys, values, aclFlags, data) =>
+    .action((adapterName, adapterAddress, aclFlags, keys, values, data) =>
       submitManagingProposal(
         adapterName,
         adapterAddress,
+        aclFlags,
         keys,
         values,
-        aclFlags,
         data,
-        { ...program.opts(), ...configs }
+        program.opts()
       )
-    );
-
-  program
+    )
     .command("process-managing-proposal <proposalId>")
     .description("Process an existing managing proposal.")
     .action((proposalId) =>
       processManagingProposal(proposalId, { ...program.opts(), ...configs })
     );
+
+  program
+    .command("vote <snapshotProposalId> [data]")
+    .description(
+      "Submit an offchain vote to Snapshot Hub using the snapshot proposal id."
+    )
+    .action(async (snapshotProposalId, data) => {
+      const vote = await inquirer.prompt([
+        {
+          type: "list",
+          name: "choice",
+          message: `Vote on proposal ${snapshotProposalId}`,
+          choices: ["Yes", "No"],
+        },
+      ]);
+
+      await voteOnProposal(snapshotProposalId, vote.choice, data, {
+        ...program.opts(),
+        ...configs,
+      });
+    });
 
   program
     .parseAsync(process.argv)

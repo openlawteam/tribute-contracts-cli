@@ -3,9 +3,13 @@ const {
   getDomainDefinition,
   getSpace,
   prepareProposalMessage,
-  SnapshotType,
+  prepareVoteMessage,
   submitMessage,
+  buildVoteMessage,
+  SnapshotType,
 } = require("@openlaw/snapshot-js-erc712");
+const { configs } = require("../../cli-config");
+const { notice, error, success } = require("./logging");
 const { signTypedData_v4 } = require("eth-sig-util");
 const { toBuffer } = require("ethereumjs-util");
 const { getDAOConfig } = require("../core/dao-registry");
@@ -22,9 +26,6 @@ const ContractDAOConfigKeys = {
   votingStakingAmount: "voting.stakingAmount",
   votingVotingPeriod: "voting.votingPeriod",
 };
-
-if (!process.env.SNAPSHOT_HUB_API_URL)
-  throw Error("Missing env var: <SNAPSHOT_HUB_API_URL>");
 
 const buildProposalMessageHelper = async (
   commonData,
@@ -48,7 +49,7 @@ const buildProposalMessageHelper = async (
       votingTimeSeconds,
       snapshot,
     },
-    process.env.SNAPSHOT_HUB_API_URL
+    configs.snapshotHubApi
   );
 };
 
@@ -63,7 +64,7 @@ const signAndSendProposal = async (proposal, provider, wallet) => {
 
   const { body, name, metadata, timestamp } = partialProposalData;
 
-  let { data } = await getSpace(process.env.SNAPSHOT_HUB_API_URL, space);
+  let { data } = await getSpace(configs.snapshotHubApi, space);
 
   const commonData = {
     name,
@@ -126,6 +127,84 @@ const signAndSendProposal = async (proposal, provider, wallet) => {
   };
 };
 
+const signAndSendVote = async (vote, provider, wallet) => {
+  const { partialVoteData, adapterAddress, type, network, dao, space } = vote;
+
+  // When using ganache, the getNetwork call always returns UNKNOWN, so we ignore that.
+  const { chainId } = await provider.getNetwork();
+
+  const actionId = adapterAddress;
+
+  const { daoProposalId, snapshotProposalId, choice } = partialVoteData;
+
+  const { data } = await getSpace(configs.snapshotHubApi, space);
+
+  const voteData = {
+    chainId: chainId,
+    choice,
+    metadata: {
+      // Must be the true member's address for calculating voting power.
+      memberAddress: wallet.address,
+    },
+  };
+
+  const voteProposalData = {
+    proposalId: daoProposalId,
+    space: space,
+    token: data.token,
+  };
+
+  // 1. Prepare snapshot vote message
+  const message = await buildVoteMessage(
+    voteData,
+    voteProposalData,
+    configs.snapshotHubApi
+  );
+
+  // 2. Prepare signing data. Snapshot and the contracts will verify this same data against the signature.
+  const erc712Message = prepareVoteMessage(message);
+
+  const { domain, types } = getDomainDefinition(
+    { ...erc712Message, type },
+    dao,
+    actionId,
+    chainId
+  );
+
+  // 3. Sign data
+  const signature = signTypedData_v4(toBuffer(wallet.privateKey), {
+    data: {
+      types,
+      primaryType: "Message",
+      domain,
+      message: erc712Message,
+    },
+  });
+
+  // 4. Send data to snapshot-hub
+  const resp = await submitMessage(
+    configs.snapshotHubApi,
+    wallet.address,
+    {
+      ...message,
+      payload: { ...message.payload, proposalId: snapshotProposalId },
+    },
+    signature,
+    {
+      actionId: domain.actionId,
+      chainId: domain.chainId,
+      verifyingContract: domain.verifyingContract,
+      message: erc712Message,
+    }
+  );
+
+  return {
+    data: message,
+    sig: signature,
+    uniqueId: resp.data.uniqueId,
+  };
+};
+
 const submitSnapshotProposal = (
   title,
   description,
@@ -156,17 +235,56 @@ const submitSnapshotProposal = (
     wallet
   )
     .then((res) => {
-      console.log(`New Snapshot Proposal Id: ${res.uniqueId}\n`);
+      success(`New Snapshot Proposal Id: ${res.uniqueId}\n`);
       return res;
     })
     .catch((err) => {
       const resp = err.response;
       if (resp && resp.data && resp.data.error_description) {
-        console.error(`ERROR: ${resp.data.error_description}`);
-      } else {
-        throw err;
+        error(`Error: ${resp.data.error_description}`);
       }
+      throw err;
     });
 };
 
-module.exports = { submitSnapshotProposal };
+const submitSnapshotVote = (
+  snapshotProposalId,
+  daoProposalId,
+  choice,
+  network,
+  dao,
+  space,
+  adapter,
+  provider,
+  wallet
+) => {
+  return signAndSendVote(
+    {
+      partialVoteData: {
+        choice: choice,
+        daoProposalId,
+        snapshotProposalId,
+      },
+      type: SnapshotType.vote,
+      space,
+      adapterAddress: adapter,
+      network,
+      dao,
+    },
+    provider,
+    wallet
+  )
+    .then((res) => {
+      notice(`New Snapshot Vote Id: ${res.uniqueId}\n`);
+      return res;
+    })
+    .catch((err) => {
+      const resp = err.response;
+      if (resp && resp.data && resp.data.error_description) {
+        error(`Error: ${resp.data.error_description}`, err);
+      }
+      throw err;
+    });
+};
+
+module.exports = { submitSnapshotProposal, submitSnapshotVote };
