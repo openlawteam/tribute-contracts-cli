@@ -19,7 +19,6 @@ const daoAccessFlags = [
 // TODO import from "tribute-contracts/utils/DeploymentUtil" v2.0.3
 const parseDaoFlags = (aclFlags) => {
   return aclFlags
-    .split(",")
     .map((f) => f.toUpperCase())
     .reduce((flags, flag) => {
       if (daoAccessFlags.includes(flag)) {
@@ -29,4 +28,4 @@ const parseDaoFlags = (aclFlags) => {
     }, {});
 };
 
-module.exports = { getDAOConfig, parseDaoFlags };
+module.exports = { daoAccessFlags, getDAOConfig, parseDaoFlags };

@@ -7,6 +7,8 @@ const {
   submitMessage,
   buildVoteMessage,
   SnapshotType,
+  getVotes,
+  getProposals,
 } = require("@openlaw/snapshot-js-erc712");
 const { configs } = require("../../cli-config");
 const { notice, error, success } = require("./logging");
@@ -215,7 +217,6 @@ const submitSnapshotProposal = (
   provider,
   wallet
 ) => {
-  // Sign and submit proposal for Snapshot Hub
   return signAndSendProposal(
     {
       partialProposalData: {
@@ -233,18 +234,13 @@ const submitSnapshotProposal = (
     },
     provider,
     wallet
-  )
-    .then((res) => {
-      success(`New Snapshot Proposal Id: ${res.uniqueId}\n`);
-      return res;
-    })
-    .catch((err) => {
-      const resp = err.response;
-      if (resp && resp.data && resp.data.error_description) {
-        error(`Error: ${resp.data.error_description}`);
-      }
-      throw err;
-    });
+  ).catch((err) => {
+    const resp = err.response;
+    if (resp && resp.data && resp.data.error_description) {
+      error(`Error: ${resp.data.error_description}`);
+    }
+    throw err;
+  });
 };
 
 const submitSnapshotVote = (
@@ -273,10 +269,23 @@ const submitSnapshotVote = (
     },
     provider,
     wallet
-  )
+  ).catch((err) => {
+    const resp = err.response;
+    if (resp && resp.data && resp.data.error_description) {
+      error(`Error: ${resp.data.error_description}`, err);
+    }
+    throw err;
+  });
+};
+
+const getSnapshotProposal = (snapshotProposalId, space) => {
+  return getProposals(configs.snapshotHubApi, space, snapshotProposalId)
     .then((res) => {
-      notice(`New Snapshot Vote Id: ${res.uniqueId}\n`);
-      return res;
+      const proposals = res.data;
+      if (proposals && proposals[snapshotProposalId]) {
+        return proposals[snapshotProposalId];
+      }
+      throw Error("Proposal not found in Snapshot Hub");
     })
     .catch((err) => {
       const resp = err.response;
@@ -287,4 +296,21 @@ const submitSnapshotVote = (
     });
 };
 
-module.exports = { submitSnapshotProposal, submitSnapshotVote };
+const getSnapshotVotes = (snapshotProposalId, space) => {
+  return getVotes(configs.snapshotHubApi, space, snapshotProposalId).catch(
+    (err) => {
+      const resp = err.response;
+      if (resp && resp.data && resp.data.error_description) {
+        error(`Error: ${resp.data.error_description}`, err);
+      }
+      throw err;
+    }
+  );
+};
+
+module.exports = {
+  submitSnapshotProposal,
+  submitSnapshotVote,
+  getSnapshotProposal,
+  getSnapshotVotes,
+};

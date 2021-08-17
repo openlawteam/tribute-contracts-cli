@@ -9,13 +9,14 @@ const {
 } = require("./src/adapters/managing-adapter");
 
 const {
-  voteOnProposal,
-  submitVoteResult,
+  newOffchainVote,
+  submitOffchainResult,
 } = require("./src/adapters/offchain-voting-adapter");
 
 const inquirer = require("inquirer");
 const { Command } = require("commander");
 const { notice } = require("./src/utils/logging");
+const { daoAccessFlags } = require("./src/core/dao-registry");
 const program = new Command();
 program.version("0.0.1");
 
@@ -30,48 +31,71 @@ const main = () => {
       );
     });
 
+  // START - MANAGING VOTES CMDs
   program
     .command(
-      "submit-managing-proposal <adapterId> <adapterAddress> <aclFlags> [keys] [values] [data]"
+      "submit-managing-proposal <adapterId> <adapterAddress> [keys] [values] [data]"
     )
     .description("Submit a new managing proposal.")
-    .action((adapterName, adapterAddress, aclFlags, keys, values, data) =>
-      submitManagingProposal(
-        adapterName,
-        adapterAddress,
-        aclFlags,
-        keys,
-        values,
-        data,
-        program.opts()
-      )
-    )
+    .action(async (adapterName, adapterAddress, keys, values, data) => {
+      await inquirer
+        .prompt([
+          {
+            type: "checkbox",
+            message: "Select the ACL Flags or hit ENTER to skip",
+            name: "aclFlags",
+            choices: daoAccessFlags.map((f) => Object.assign({ name: f })),
+          },
+        ])
+        .then((anwsers) =>
+          submitManagingProposal(
+            adapterName,
+            adapterAddress,
+            anwsers.aclFlags,
+            keys,
+            values,
+            data,
+            program.opts()
+          )
+        );
+    });
+
+  program
     .command("process-managing-proposal <proposalId>")
     .description("Process an existing managing proposal.")
     .action((proposalId) =>
-      processManagingProposal(proposalId, { ...program.opts(), ...configs })
+      processManagingProposal(proposalId, program.opts())
     );
+  // END - MANAGING VOTES CMDs
 
+  // START - OFFCHAIN VOTES CMDs
   program
-    .command("vote <snapshotProposalId> [data]")
+    .command("new-offchain-vote <snapshotProposalId> [data]")
     .description(
       "Submit an offchain vote to Snapshot Hub using the snapshot proposal id."
     )
     .action(async (snapshotProposalId, data) => {
-      const vote = await inquirer.prompt([
-        {
-          type: "list",
-          name: "choice",
-          message: `Vote on proposal ${snapshotProposalId}`,
-          choices: ["Yes", "No"],
-        },
-      ]);
-
-      await voteOnProposal(snapshotProposalId, vote.choice, data, {
-        ...program.opts(),
-        ...configs,
-      });
+      await inquirer
+        .prompt([
+          {
+            type: "list",
+            name: "choice",
+            message: `Vote on proposal ${snapshotProposalId}`,
+            choices: ["Yes", "No"],
+          },
+        ])
+        .then((vote) =>
+          newOffchainVote(snapshotProposalId, vote.choice, data, program.opts())
+        );
     });
+
+  program
+    .command("submit-offchain-result <snapshotProposalId>")
+    .description(
+      "Submit an offchain vote result to the DAO using the snapshot proposal id."
+    )
+    .action((snapshotProposalId) => submitOffchainResult(snapshotProposalId));
+  // END - OFFCHAIN VOTES CMDs
 
   program
     .parseAsync(process.argv)

@@ -28,14 +28,15 @@ const submitManagingProposal = async (
 ) => {
   const configKeys = keys ? keys.split(",").map((k) => toBytes32(k)) : [];
   const configValues = values ? values.split(",").map((v) => v) : [];
+  const configAclFlags = parseDaoFlags(aclFlags);
 
   notice(`\n ::: Submitting Managing proposal...\n`);
   logEnvConfigs(configs, configs.contracts.ManagingContract);
   info(`Adapter:\t\t${adapterName} @ ${adapterAddress}`);
-  info(`AccessFlags:\t\t${aclFlags}`);
+  info(`AccessFlags:\t\t${JSON.stringify(configAclFlags)}`);
   info(`Keys:\t\t\t${configKeys}`);
   info(`Values:\t\t\t${configValues}`);
-  info(`Data:\t\t\t${data ? data : "n/a"}\n`);
+  info(`Data:\t\t\t${data ? data : ""}\n`);
 
   const { contract, provider, wallet } = getContract(
     "ManagingContract",
@@ -54,6 +55,7 @@ const submitManagingProposal = async (
     wallet
   )
     .then(async (res) => {
+      success(`New Snapshot Proposal Id: ${res.uniqueId}\n`);
       const data = res.data;
       const snapshotProposalId = res.uniqueId;
       const daoProposalId = sha3(snapshotProposalId);
@@ -86,7 +88,7 @@ const submitManagingProposal = async (
           flags: entryDao(
             adapterName,
             { address: adapterAddress },
-            parseDaoFlags(aclFlags)
+            configAclFlags
           ).flags,
         },
         configKeys,
@@ -102,7 +104,7 @@ const submitManagingProposal = async (
     });
 };
 
-const processManagingProposal = async (daoProposalId, opts) => {
+const processManagingProposal = async (daoProposalId) => {
   notice(`\n::: Processing Managing proposal...\n`);
   logEnvConfigs(configs, configs.contracts.ManagingContract);
   info(`DAO Proposal Id:\t\t${daoProposalId}`);
