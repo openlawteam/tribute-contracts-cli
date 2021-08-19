@@ -1,14 +1,12 @@
-const { sha3 } = require("tribute-contracts/utils/ContractUtil");
 const { getContract } = require("../utils/contract");
 const { configs } = require("../../cli-config");
 
-const getPriorAmount = (data) => {
+const getBalanceOf = async (memberAddress, token) => {
   const { contract } = getContract(
     "BankExtension",
-    configs.network,
     configs.contracts.BankExtension
   );
-  return await contract.
+  return await contract.balanceOf(memberAddress, token);
 };
 
-module.exports = { daoAccessFlags, getDAOConfig, parseDaoFlags };
+module.exports = { getBalanceOf };

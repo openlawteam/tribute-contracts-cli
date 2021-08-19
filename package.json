@@ -10,17 +10,17 @@
   "author": "dev@openlaw.io",
   "license": "MIT",
   "dependencies": {
-    "@openlaw/snapshot-js-erc712": "1.1.2",
+    "@openlaw/snapshot-js-erc712": "1.2.0",
     "@truffle/hdwallet-provider": "^1.4.3",
     "chalk": "^4.1.2",
     "commander": "^8.1.0",
     "dotenv": "^10.0.0",
     "eth-sig-util": "3.0.1",
     "ethereumjs-util": "7.1.0",
-    "ethers": "5.4.1",
+    "ethers": "5.4.5",
     "inquirer": "^8.1.2",
     "tribute-contracts": "^1.0.1",
-    "truffle": "^5.4.5",
+    "truffle": "5.4.6",
     "web3": "^1.4.0"
   }
 }

@@ -40,16 +40,12 @@ const submitManagingProposal = async (
 
   const { contract, provider, wallet } = getContract(
     "ManagingContract",
-    configs.network,
     configs.contracts.ManagingContract
   );
 
   await submitSnapshotProposal(
     `Adapter: ${adapterName}`,
     "Creates/Update adapter",
-    configs.network,
-    configs.contracts.DaoRegistry,
-    configs.space,
     configs.contracts.ManagingContract,
     provider,
     wallet
@@ -111,7 +107,6 @@ const processManagingProposal = async (daoProposalId) => {
 
   const { contract, wallet } = getContract(
     "ManagingContract",
-    configs.network,
     configs.contracts.ManagingContract
   );
 

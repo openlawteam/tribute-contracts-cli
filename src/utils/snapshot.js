@@ -1,6 +1,5 @@
 const {
   buildProposalMessage,
-  getDomainDefinition,
   getSpace,
   prepareProposalMessage,
   prepareVoteMessage,
@@ -12,9 +11,9 @@ const {
 } = require("@openlaw/snapshot-js-erc712");
 const { configs } = require("../../cli-config");
 const { notice, error, success } = require("./logging");
-const { signTypedData_v4 } = require("eth-sig-util");
-const { toBuffer } = require("ethereumjs-util");
 const { getDAOConfig } = require("../core/dao-registry");
+const { SignerV4 } = require("../utils/signer");
+const { normalize } = require("eth-sig-util");
 
 const ContractDAOConfigKeys = {
   offchainVotingGracePeriod: "offchainvoting.gracePeriod",
@@ -56,7 +55,7 @@ const buildProposalMessageHelper = async (
 };
 
 const signAndSendProposal = async (proposal, provider, wallet) => {
-  const { partialProposalData, adapterAddress, type, network, dao, space } =
+  const { partialProposalData, adapterAddress, type, space, dao, network } =
     proposal;
 
   // When using ganache, the getNetwork call always returns UNKNOWN, so we ignore that.
@@ -66,14 +65,14 @@ const signAndSendProposal = async (proposal, provider, wallet) => {
 
   const { body, name, metadata, timestamp } = partialProposalData;
 
-  let { data } = await getSpace(configs.snapshotHubApi, space);
+  const { data } = await getSpace(configs.snapshotHubApi, space);
 
   const commonData = {
     name,
     body,
     metadata,
     token: data.token,
-    space: space,
+    space,
   };
 
   // 1. Check proposal type and prepare appropriate message
@@ -87,37 +86,25 @@ const signAndSendProposal = async (proposal, provider, wallet) => {
     provider
   );
 
-  // 2. Prepare signing data. Snapshot and the contracts will verify this same data against the signature.
-  const erc712Message = prepareProposalMessage(message);
-
-  const { domain, types } = getDomainDefinition(
-    { ...erc712Message, type },
-    dao,
+  // 2. Sign data
+  const signature = SignerV4(wallet.privateKey)(
+    message,
+    configs.contracts.DaoRegistry,
     actionId,
     chainId
   );
 
-  // 3. Sign data
-  const signature = signTypedData_v4(toBuffer(wallet.privateKey), {
-    data: {
-      types,
-      primaryType: "Message",
-      domain,
-      message: erc712Message,
-    },
-  });
-
-  // 4. Send data to snapshot-hub
+  // 3. Send data to snapshot-hub
   const resp = await submitMessage(
     process.env.SNAPSHOT_HUB_API_URL,
     wallet.address,
     message,
     signature,
     {
-      actionId: domain.actionId,
-      chainId: domain.chainId,
-      verifyingContract: domain.verifyingContract,
-      message: erc712Message,
+      actionId: actionId,
+      chainId: chainId,
+      verifyingContract: configs.contracts.DaoRegistry,
+      message: prepareProposalMessage(message),
     }
   );
 
@@ -130,7 +117,7 @@ const signAndSendProposal = async (proposal, provider, wallet) => {
 };
 
 const signAndSendVote = async (vote, provider, wallet) => {
-  const { partialVoteData, adapterAddress, type, network, dao, space } = vote;
+  const { partialVoteData, adapterAddress, type, space, dao, network } = vote;
 
   // When using ganache, the getNetwork call always returns UNKNOWN, so we ignore that.
   const { chainId } = await provider.getNetwork();
@@ -163,27 +150,15 @@ const signAndSendVote = async (vote, provider, wallet) => {
     configs.snapshotHubApi
   );
 
-  // 2. Prepare signing data. Snapshot and the contracts will verify this same data against the signature.
-  const erc712Message = prepareVoteMessage(message);
-
-  const { domain, types } = getDomainDefinition(
-    { ...erc712Message, type },
-    dao,
+  // 2. Sign data
+  const signature = SignerV4(wallet.privateKey)(
+    { ...message, type },
+    configs.contracts.DaoRegistry,
     actionId,
     chainId
   );
 
-  // 3. Sign data
-  const signature = signTypedData_v4(toBuffer(wallet.privateKey), {
-    data: {
-      types,
-      primaryType: "Message",
-      domain,
-      message: erc712Message,
-    },
-  });
-
-  // 4. Send data to snapshot-hub
+  // 3. Send data to snapshot-hub
   const resp = await submitMessage(
     configs.snapshotHubApi,
     wallet.address,
@@ -193,10 +168,10 @@ const signAndSendVote = async (vote, provider, wallet) => {
     },
     signature,
     {
-      actionId: domain.actionId,
-      chainId: domain.chainId,
-      verifyingContract: domain.verifyingContract,
-      message: erc712Message,
+      actionId: actionId,
+      chainId: chainId,
+      verifyingContract: configs.contracts.DaoRegistry,
+      message: prepareVoteMessage(message),
     }
   );
 
@@ -210,9 +185,6 @@ const signAndSendVote = async (vote, provider, wallet) => {
 const submitSnapshotProposal = (
   title,
   description,
-  network,
-  dao,
-  space,
   adapter,
   provider,
   wallet
@@ -227,10 +199,10 @@ const submitSnapshotProposal = (
         },
       },
       type: SnapshotType.proposal,
-      space,
+      space: configs.space,
       adapterAddress: adapter,
-      network,
-      dao,
+      network: configs.network,
+      dao: configs.contracts.DaoRegistry,
     },
     provider,
     wallet

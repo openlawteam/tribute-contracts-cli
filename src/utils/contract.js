@@ -1,33 +1,39 @@
 const { ethers } = require("ethers");
 const fs = require("fs");
 const path = require("path");
+const { configs } = require("../../cli-config");
 const { getNetworkDetails } = require("tribute-contracts/utils/DeploymentUtil");
-
-if (!process.env.TRUFFLE_MNEMONIC)
-  throw Error("Missing env var: <TRUFFLE_MNEMONIC>");
 
 const openWallet = (provider) => {
   // The Wallet class inherits Signer and can sign transactions
   // and messages using a private key as a standard Externally Owned Account (EOA).
-  const wallet = ethers.Wallet.fromMnemonic(process.env.TRUFFLE_MNEMONIC);
+  const wallet = ethers.Wallet.fromMnemonic(configs.truffleMnemonic);
   return wallet.connect(provider);
 };
 
 const getProvider = (network) => {
-  if (network === "ganache") {
-    // Using the same network config as truffle-config.js
-    return new ethers.providers.JsonRpcProvider({
-      url: "http://localhost:7545",
-      network: {
-        chainId: getNetworkDetails(network).chainId,
-        name: network,
-      },
-    });
+  if (!network)
+    throw new Error("Unable to get the provider due to invalid network");
+
+  switch (network) {
+    case "rinkeby":
+    case "mainnet":
+      return ethers.getDefaultProvider(network, {
+        infura: configs.infuraApiKey,
+        alchemy: configs.alchemyApiKey,
+      });
+
+    case "ganache":
+    default:
+      // Using the same network config as truffle-config.js
+      return new ethers.providers.JsonRpcProvider({
+        url: configs.ganacheUrl,
+        network: {
+          chainId: getNetworkDetails(network).chainId,
+          name: network,
+        },
+      });
   }
-  return ethers.getDefaultProvider(network, {
-    infura: process.env.INFURA_KEY,
-    alchemy: process.env.ALCHEMY_KEY,
-  });
 };
 
 const getABI = (contractName) => {
@@ -45,8 +51,8 @@ const attachContract = (address, abi, wallet) => {
   return contract.connect(wallet);
 };
 
-const getContract = (name, network, contract) => {
-  const provider = getProvider(network);
+const getContract = (name, contract) => {
+  const provider = getProvider(configs.network);
   const wallet = openWallet(provider);
   return {
     contract: attachContract(contract, getABI(name), wallet),
