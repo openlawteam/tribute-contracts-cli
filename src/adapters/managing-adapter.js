@@ -51,7 +51,6 @@ const submitManagingProposal = async (
     wallet
   )
     .then(async (res) => {
-      success(`New Snapshot Proposal Id: ${res.uniqueId}\n`);
       const data = res.data;
       const snapshotProposalId = res.uniqueId;
       const daoProposalId = sha3(snapshotProposalId);
@@ -96,6 +95,7 @@ const submitManagingProposal = async (
     })
     .then((data) => {
       success(`New DAO Proposal Id: ${data.daoProposalId}\n`);
+      success(`New Snapshot Proposal Id: ${data.snapshotProposalId}\n`);
       notice(`::: Managing proposal submitted!\n`);
     });
 };

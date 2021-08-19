@@ -73,6 +73,8 @@ const submitOffchainResult = async (snapshotProposalId) => {
     snapshotProposalId,
     configs.space
   );
+  const actionId = snapshotProposal.actionId;
+
   if (configs.debug)
     warn(`\n Snapshot Proposal: ${JSON.stringify(snapshotProposal)}`);
 
@@ -96,13 +98,13 @@ const submitOffchainResult = async (snapshotProposalId) => {
 
   const snapshot = snapshotProposal.msg.payload.snapshot.toString();
 
-  const votes = await Promise.all(
+  const voteEntries = await Promise.all(
     snapshotVotes
       .map((v) => v[Object.keys(v)[0]])
       .map(async (vote) => {
         // Must be the true member's address for calculating voting power.
         const memberBalanceAtSnapshot = await bankExtension.getPriorAmount(
-          normalize(vote.msg.payload.metadata.memberAddress),
+          vote.msg.payload.metadata.memberAddress,
           UNITS,
           snapshot
         );
@@ -117,45 +119,26 @@ const submitOffchainResult = async (snapshotProposalId) => {
       })
   );
 
-  if (configs.debug) warn(`\nVotes: ${JSON.stringify(votes)}`);
+  if (configs.debug) warn(`\nVotes: ${JSON.stringify(voteEntries)}`);
 
   const { chainId } = await provider.getNetwork();
 
   // Prepare vote Result
   const { voteResultTree, result } = await prepareVoteResult({
-    actionId: offchainContract.address,
+    actionId: actionId,
     chainId: chainId,
     daoAddress: configs.contracts.DaoRegistry,
-    votes,
+    votes: voteEntries,
   });
 
   // The last of the result node tree steps
   const resultNodeLast = result[result.length - 1];
 
-  // Validate the vote result node by calling the contract
-  // const getBadNodeErrorResponse = await offchainContract.getBadNodeError(
-  //   configs.contracts.DaoRegistry,
-  //   daoProposalId,
-  //   // `bool submitNewVote`
-  //   true,
-  //   voteResultTree.getHexRoot(),
-  //   snapshot,
-  //   // `gracePeriodStartingTime` should be `0` as `submitNewVote` is `true`
-  //   0,
-  //   resultNodeLast
-  // );
-
-  // if (Number(getBadNodeErrorResponse) !== 0) {
-  //   throw new Error(
-  //     `Cannot submit off-chain voting result. Node has an error: ${getBadNodeErrorResponse}.`
-  //   );
-  // }
-
   // Sign root hex result message
   const signature = SignerV4(wallet.privateKey)(
     { root: voteResultTree.getHexRoot(), type: "result" },
     configs.contracts.DaoRegistry,
-    offchainContract.address,
+    actionId,
     chainId
   );
 
@@ -178,7 +161,7 @@ const submitOffchainResult = async (snapshotProposalId) => {
    */
   if (!snapshotOffchainProofExists) {
     await submitOffchainVotingProof(configs.snapshotHubApi, configs.space, {
-      actionId: offchainContract.address,
+      actionId: actionId,
       chainId: chainId,
       steps: result,
       merkleRoot: voteResultTree.getHexRoot(),
@@ -187,17 +170,8 @@ const submitOffchainResult = async (snapshotProposalId) => {
     info("\nOffchain proof submitted to Snapshot Hub");
   }
 
-  const a = await getAddressIfDelegated(wallet.address);
-  error(a);
-  const b = await getBalanceOf(wallet.address, UNITS);
-  error(b);
-
   // Send the tx
-  offchainContract.on("Debug", (event) => {
-
-    console.log(event);
-  });
-  const receipt = await offchainContract.submitVoteResult(
+  await offchainContract.submitVoteResult(
     configs.contracts.DaoRegistry,
     daoProposalId,
     voteResultTree.getHexRoot(),
