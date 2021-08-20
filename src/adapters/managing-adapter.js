@@ -100,9 +100,11 @@ const submitManagingProposal = async (
     });
 };
 
-const processManagingProposal = async (daoProposalId) => {
+const processManagingProposal = async (snapshotProposalId) => {
+  const daoProposalId = sha3(snapshotProposalId);
   notice(`\n::: Processing Managing proposal...\n`);
   logEnvConfigs(configs, configs.contracts.ManagingContract);
+  info(`Snapshot Proposal Id:\t\t${snapshotProposalId}`);
   info(`DAO Proposal Id:\t\t${daoProposalId}`);
 
   const { contract, wallet } = getContract(
