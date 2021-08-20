@@ -33,17 +33,12 @@ const BadNodeError = {
   4: "BAD_SIGNATURE",
 };
 
-const newOffchainVote = async (snapshotProposalId, choice, data, opts) => {
-  const daoProposalId = sha3(snapshotProposalId);
-
-  notice(`\n ::: Submitting offchain voting...\n`);
-  logEnvConfigs(configs, configs.contracts.OffchainVoting);
-
-  info(`Snapshot Proposal Id:\t${snapshotProposalId}`);
-  info(`DAO Proposal Id:\t${daoProposalId}`);
-  info(`Choice:\t\t\t${choice}`);
-  info(`Data:\t\t\t${data ? data : "n/a"}\n`);
-
+const newOffchainVote = async (
+  snapshotProposalId,
+  daoProposalId,
+  choice,
+  data
+) => {
   const { provider, wallet } = getContract(
     "OffchainVotingContract",
     configs.contracts.OffchainVotingContract
@@ -54,7 +49,7 @@ const newOffchainVote = async (snapshotProposalId, choice, data, opts) => {
     configs.space
   );
 
-  await submitSnapshotVote(
+  return submitSnapshotVote(
     snapshotProposalId,
     daoProposalId,
     choice,
@@ -64,26 +59,17 @@ const newOffchainVote = async (snapshotProposalId, choice, data, opts) => {
     snapshotProposal.actionId,
     provider,
     wallet
-  ).then(async (res) => {
-    notice(`New Snapshot Vote Id: ${res.uniqueId}\n`);
-    notice(`Member ${wallet.address} has voted "${choice}"\n`);
-    notice(`Snapshot Proposal Id ${snapshotProposalId}\n`);
+  ).then(() => {
+    return { snapshotProposalId, choice, memberAddress: wallet.address };
   });
 };
 
-const submitOffchainResult = async (snapshotProposalId) => {
-  const daoProposalId = sha3(snapshotProposalId);
-
-  notice(`\n ::: Submitting offchain voting results...\n`);
-  logEnvConfigs(configs, configs.contracts.OffchainVotingContract);
-
-  info(`Snapshot Proposal Id:\t${snapshotProposalId}`);
-  info(`DAO Proposal Id:\t${daoProposalId}`);
-
+const submitOffchainResult = async (snapshotProposalId, daoProposalId) => {
   const snapshotProposal = await getSnapshotProposal(
     snapshotProposalId,
     configs.space
   );
+
   const actionId = snapshotProposal.actionId;
   const snapshot = snapshotProposal.msg.payload.snapshot.toString();
 
@@ -91,9 +77,7 @@ const submitOffchainResult = async (snapshotProposalId) => {
     warn(`\n Snapshot Proposal: ${JSON.stringify(snapshotProposal)}`);
 
   const res = await getSnapshotVotes(snapshotProposalId, configs.space);
-
   const snapshotVotes = res.data;
-
   if (snapshotVotes && snapshotVotes.length === 0)
     throw Error("No votes found");
 
@@ -102,7 +86,6 @@ const submitOffchainResult = async (snapshotProposalId) => {
     MEMBER_COUNT,
     snapshot
   );
-
   const memberAddresses = await Promise.all(
     numberRangeArray(Number(numberOfDAOMembersAtSnapshot) - 1, 0).map(
       (memberIndex) => getMemberAddress(memberIndex)
@@ -215,7 +198,7 @@ const submitOffchainResult = async (snapshotProposalId) => {
       merkleRoot: voteResultTree.getHexRoot(),
       verifyingContract: configs.contracts.DaoRegistry,
     });
-    info("\nOffchain proof submitted to Snapshot Hub");
+    if (configs.debug) warn("\nOffchain proof submitted to Snapshot Hub");
   }
 
   // Send the tx
@@ -228,7 +211,11 @@ const submitOffchainResult = async (snapshotProposalId) => {
     { from: wallet.address }
   );
 
-  notice(`::: Vote results submitted for DAO Proposal Id ${daoProposalId}!\n`);
+  return {
+    daoProposalId,
+    signature,
+    voteResultHexRoot: voteResultTree.getHexRoot(),
+  };
 };
 
 module.exports = { newOffchainVote, submitOffchainResult };
