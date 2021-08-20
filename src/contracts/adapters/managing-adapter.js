@@ -29,13 +29,13 @@ export const submitManagingProposal = async ({
     configs.contracts.ManagingContract
   );
 
-  return await submitSnapshotProposal(
-    `Adapter: ${adapterName}`,
-    "Creates/Update adapter",
-    configs.contracts.ManagingContract,
+  return await submitSnapshotProposal({
+    title: `Adapter: ${adapterName}`,
+    description: "Creates/Update adapter",
+    actionId: configs.contracts.ManagingContract,
     provider,
-    wallet
-  ).then(async (res) => {
+    wallet,
+  }).then(async (res) => {
     const data = res.data;
     const snapshotProposalId = res.uniqueId;
     const daoProposalId = sha3(snapshotProposalId);
@@ -80,7 +80,7 @@ export const submitManagingProposal = async ({
   });
 };
 
-export const processManagingProposal = async (daoProposalId) => {
+export const processManagingProposal = async ({ daoProposalId }) => {
   const { contract, wallet } = getContract(
     "ManagingContract",
     configs.contracts.ManagingContract

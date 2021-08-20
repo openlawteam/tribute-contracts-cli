@@ -2,6 +2,10 @@ import inquirer from "inquirer";
 import { sha3 } from "tribute-contracts/utils/ContractUtil.js";
 import { configs } from "../../../../cli.config.js";
 import {
+  newOffchainVote,
+  submitOffchainResult,
+} from "../../../contracts/adapters/offchain-voting-adapter.js";
+import {
   logEnvConfigs,
   success,
   notice,
@@ -35,12 +39,12 @@ export const offchainCommands = (program) => {
           info(`Choice:\t\t\t${vote.choice}`);
           info(`Data:\t\t\t${data ? data : "n/a"}\n`);
 
-          return newOffchainVote(
+          return newOffchainVote({
             snapshotProposalId,
             daoProposalId,
-            vote.choice,
-            data
-          );
+            choice: vote.choice,
+            data,
+          });
         })
         .then((res) => {
           notice(`Member ${res.memberAddress} has voted "${res.choice}"\n`);

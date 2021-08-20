@@ -177,13 +177,13 @@ const signAndSendVote = async (vote, provider, wallet) => {
   };
 };
 
-export const submitSnapshotProposal = (
+export const submitSnapshotProposal = ({
   title,
   description,
   actionId,
   provider,
-  wallet
-) => {
+  wallet,
+}) => {
   return signAndSendProposal(
     {
       partialProposalData: {
@@ -210,7 +210,7 @@ export const submitSnapshotProposal = (
   });
 };
 
-export const submitSnapshotVote = (
+export const submitSnapshotVote = ({
   snapshotProposalId,
   daoProposalId,
   choice,
@@ -219,12 +219,12 @@ export const submitSnapshotVote = (
   space,
   actionId,
   provider,
-  wallet
-) => {
+  wallet,
+}) => {
   return signAndSendVote(
     {
       partialVoteData: {
-        choice: choice,
+        choice,
         daoProposalId,
         snapshotProposalId,
       },

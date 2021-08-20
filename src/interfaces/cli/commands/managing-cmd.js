@@ -67,11 +67,10 @@ export const managingCommands = (program) => {
       info(`Snapshot Proposal Id:\t${snapshotProposalId}`);
       info(`DAO Proposal Id:\t${daoProposalId}`);
 
-      return processManagingProposal(
-        snapshotProposalId,
+      return processManagingProposal({
         daoProposalId,
-        program.opts()
-      )
+        opts: program.opts(),
+      })
         .then((res) => {
           success(`\n::: Processed Managing proposal\n`);
         })

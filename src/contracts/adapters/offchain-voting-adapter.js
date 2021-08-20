@@ -20,10 +20,10 @@ import {
   getSnapshotVotes,
   getSnapshotProposal,
 } from "../../services/snapshot-service.js";
-import { warn } from "../../utils/logging";
-import { getPriorAmount } from "../extensions/bank-extension";
-import { SignerV4 } from "../../utils/signer";
-import { getMemberAddress } from "../core/dao-registry";
+import { warn } from "../../utils/logging.js";
+import { getPriorAmount } from "../extensions/bank-extension.js";
+import { SignerV4 } from "../../utils/signer.js";
+import { getMemberAddress } from "../core/dao-registry.js";
 
 const BadNodeError = {
   0: "OK",
@@ -33,12 +33,12 @@ const BadNodeError = {
   4: "BAD_SIGNATURE",
 };
 
-export const newOffchainVote = async (
+export const newOffchainVote = async ({
   snapshotProposalId,
   daoProposalId,
   choice,
-  data
-) => {
+  data,
+}) => {
   const { provider, wallet } = getContract(
     "OffchainVotingContract",
     configs.contracts.OffchainVotingContract
@@ -49,17 +49,17 @@ export const newOffchainVote = async (
     configs.space
   );
 
-  return submitSnapshotVote(
+  return submitSnapshotVote({
     snapshotProposalId,
     daoProposalId,
     choice,
-    configs.network,
-    configs.contracts.DaoRegistry,
-    configs.space,
-    snapshotProposal.actionId,
+    network: configs.network,
+    dao: configs.contracts.DaoRegistry,
+    space: configs.space,
+    actionId: snapshotProposal.actionId,
     provider,
-    wallet
-  ).then(() => {
+    wallet,
+  }).then(() => {
     return { snapshotProposalId, choice, memberAddress: wallet.address };
   });
 };
@@ -217,6 +217,7 @@ export const submitOffchainResult = async (
   return {
     daoProposalId,
     signature,
+    snapshotProposalId,
     voteResultHexRoot: voteResultTree.getHexRoot(),
   };
 };

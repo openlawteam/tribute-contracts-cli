@@ -1,7 +1,7 @@
-const { getContract } = require("../../utils/contract");
-const { configs } = require("../../../cli.config");
+import { getContract } from "../../utils/contract.js";
+import { configs } from "../../../cli.config.js";
 
-const getBalanceOf = async (memberAddress, tokenAddr) => {
+export const getBalanceOf = async (memberAddress, tokenAddr) => {
   const { contract } = getContract(
     "BankExtension",
     configs.contracts.BankExtension
@@ -9,12 +9,10 @@ const getBalanceOf = async (memberAddress, tokenAddr) => {
   return await contract.balanceOf(memberAddress, tokenAddr);
 };
 
-const getPriorAmount = async (account, tokenAddr, blockNumber) => {
+export const getPriorAmount = async (account, tokenAddr, blockNumber) => {
   const { contract } = getContract(
     "BankExtension",
     configs.contracts.BankExtension
   );
   return await contract.getPriorAmount(account, tokenAddr, blockNumber);
 };
-
-module.exports = { getBalanceOf, getPriorAmount };
