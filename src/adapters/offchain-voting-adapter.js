@@ -1,14 +1,20 @@
 const { configs } = require("../../cli-config");
-const { sha3, UNITS } = require("tribute-contracts/utils/ContractUtil");
+const {
+  sha3,
+  UNITS,
+  TOTAL,
+  MEMBER_COUNT,
+} = require("tribute-contracts/utils/ContractUtil");
 const {
   VoteChoicesIndex,
   prepareVoteResult,
-  getVoteResultRootDomainDefinition,
   createVote,
   getOffchainVotingProof,
   submitOffchainVotingProof,
 } = require("@openlaw/snapshot-js-erc712");
 const { getContract } = require("../utils/contract");
+const { normalizeString } = require("../utils/string");
+const { numberRangeArray } = require("../utils/array");
 const {
   submitSnapshotVote,
   getSnapshotVotes,
@@ -22,10 +28,20 @@ const {
   logEnvConfigs,
   error,
 } = require("../utils/logging");
-const { getBalanceOf } = require("../extensions/bank-extension");
-const { getAddressIfDelegated } = require("../core/dao-registry");
-const { normalize } = require("eth-sig-util");
+const {
+  getBalanceOf,
+  getPriorAmount,
+} = require("../extensions/bank-extension");
 const { SignerV4 } = require("../utils/signer");
+const { getMemberAddress } = require("../core/dao-registry");
+
+const BadNodeError = {
+  0: "OK",
+  1: "WRONG_PROPOSAL_ID",
+  2: "INVALID_CHOICE",
+  3: "AFTER_VOTING_PERIOD",
+  4: "BAD_SIGNATURE",
+};
 
 const newOffchainVote = async (snapshotProposalId, choice, data, opts) => {
   const daoProposalId = sha3(snapshotProposalId);
@@ -43,6 +59,11 @@ const newOffchainVote = async (snapshotProposalId, choice, data, opts) => {
     configs.contracts.OffchainVotingContract
   );
 
+  const snapshotProposal = await getSnapshotProposal(
+    snapshotProposalId,
+    configs.space
+  );
+
   await submitSnapshotVote(
     snapshotProposalId,
     daoProposalId,
@@ -50,7 +71,7 @@ const newOffchainVote = async (snapshotProposalId, choice, data, opts) => {
     configs.network,
     configs.contracts.DaoRegistry,
     configs.space,
-    configs.contracts.OffchainVotingContract,
+    snapshotProposal.actionId,
     provider,
     wallet
   ).then(async (res) => {
@@ -74,6 +95,7 @@ const submitOffchainResult = async (snapshotProposalId) => {
     configs.space
   );
   const actionId = snapshotProposal.actionId;
+  const snapshot = snapshotProposal.msg.payload.snapshot.toString();
 
   if (configs.debug)
     warn(`\n Snapshot Proposal: ${JSON.stringify(snapshotProposal)}`);
@@ -85,41 +107,58 @@ const submitOffchainResult = async (snapshotProposalId) => {
   if (snapshotVotes && snapshotVotes.length === 0)
     throw Error("No votes found");
 
-  const {
-    contract: bankExtension,
-    provider,
-    wallet,
-  } = getContract("BankExtension", configs.contracts.BankExtension);
-
-  const { contract: offchainContract } = getContract(
-    "OffchainVotingContract",
-    configs.contracts.OffchainVotingContract
+  const numberOfDAOMembersAtSnapshot = await getPriorAmount(
+    TOTAL,
+    MEMBER_COUNT,
+    snapshot
   );
 
-  const snapshot = snapshotProposal.msg.payload.snapshot.toString();
+  const memberAddresses = await Promise.all(
+    numberRangeArray(Number(numberOfDAOMembersAtSnapshot) - 1, 0).map(
+      (memberIndex) => getMemberAddress(memberIndex)
+    )
+  );
 
   const voteEntries = await Promise.all(
-    snapshotVotes
-      .map((v) => v[Object.keys(v)[0]])
-      .map(async (vote) => {
-        // Must be the true member's address for calculating voting power.
-        const memberBalanceAtSnapshot = await bankExtension.getPriorAmount(
-          vote.msg.payload.metadata.memberAddress,
-          UNITS,
-          snapshot
-        );
+    memberAddresses.map(async (memberAddress, i) => {
+      const voteData = Object.values(
+        snapshotVotes.find(
+          (v) =>
+            normalizeString(memberAddress) ===
+            normalizeString(
+              Object.values(v)[0].msg.payload.metadata.memberAddress
+            )
+        ) || {}
+      )[0];
 
-        return createVote({
-          proposalId: daoProposalId,
-          sig: vote.sig || "0x",
-          timestamp: vote ? Number(vote.msg.timestamp) : 0,
-          voteYes: vote.msg.payload.choice === VoteChoicesIndex.Yes,
-          weight: vote ? memberBalanceAtSnapshot : "0",
-        });
-      })
+      // Get the member's balance at the snapshot
+      const memberBalanceAtSnapshot = await getPriorAmount(
+        memberAddress,
+        UNITS,
+        snapshot
+      );
+
+      // Create votes based on whether `voteData` was found for `memberAddress`
+      return createVote({
+        proposalId: daoProposalId,
+        sig: voteData?.sig || "0x",
+        timestamp: voteData ? Number(voteData.msg.timestamp) : 0,
+        voteYes: voteData?.msg.payload.choice === VoteChoicesIndex.Yes,
+        weight: voteData ? memberBalanceAtSnapshot : "0",
+      });
+    })
   );
 
   if (configs.debug) warn(`\nVotes: ${JSON.stringify(voteEntries)}`);
+
+  const {
+    contract: offchainContract,
+    provider,
+    wallet,
+  } = getContract(
+    "OffchainVotingContract",
+    configs.contracts.OffchainVotingContract
+  );
 
   const { chainId } = await provider.getNetwork();
 
@@ -133,6 +172,25 @@ const submitOffchainResult = async (snapshotProposalId) => {
 
   // The last of the result node tree steps
   const resultNodeLast = result[result.length - 1];
+
+  // Validate the vote result node by calling the contract
+  const getBadNodeErrorResponse = await offchainContract.getBadNodeError(
+    configs.contracts.DaoRegistry,
+    daoProposalId,
+    // `bool submitNewVote`
+    true,
+    voteResultTree.getHexRoot(),
+    snapshot,
+    // `gracePeriodStartingTime` should be `0` as `submitNewVote` is `true`
+    0,
+    resultNodeLast
+  );
+
+  if (getBadNodeErrorResponse !== 0 /*OK*/) {
+    throw new Error(
+      `Cannot submit off-chain voting result. Node has an error: ${BadNodeError[getBadNodeErrorResponse]}.`
+    );
+  }
 
   // Sign root hex result message
   const signature = SignerV4(wallet.privateKey)(
