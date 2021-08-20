@@ -1,5 +1,7 @@
-require("dotenv").config({ path: ".env" });
-const { contracts } = require("./contracts");
+import dotenv from "dotenv";
+dotenv.config({ path: ".env" });
+
+import { contracts } from "./contracts.js";
 
 if (!process.env.ETHEREUM_NETWORK)
   throw Error("Missing ETHEREUM_NETWORK env var");
@@ -10,7 +12,7 @@ if (!process.env.SNAPSHOT_HUB_API_URL)
 if (!process.env.TRUFFLE_MNEMONIC)
   throw Error("Missing env var: <TRUFFLE_MNEMONIC>");
 
-const configs = {
+export const configs = {
   network: process.env.ETHEREUM_NETWORK,
   space: process.env.SNAPSHOT_HUB_SPACE,
   snapshotHubApi: process.env.SNAPSHOT_HUB_API_URL,
@@ -23,5 +25,3 @@ const configs = {
     ? process.env.GANACHE_URL
     : "http://localhost:7545",
 };
-
-module.exports = { configs };

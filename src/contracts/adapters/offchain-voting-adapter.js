@@ -1,29 +1,29 @@
-const { configs } = require("../../../cli-config");
-const {
-  sha3,
-  UNITS,
-  TOTAL,
-  MEMBER_COUNT,
-} = require("tribute-contracts/utils/ContractUtil");
-const {
+import {
   VoteChoicesIndex,
   prepareVoteResult,
   createVote,
   getOffchainVotingProof,
   submitOffchainVotingProof,
-} = require("@openlaw/snapshot-js-erc712");
-const { getContract } = require("../../utils/contract");
-const { normalizeString } = require("../../utils/string");
-const { numberRangeArray } = require("../../utils/array");
-const {
+} from "@openlaw/snapshot-js-erc712";
+import { configs } from "../../../cli.config.js";
+import {
+  UNITS,
+  TOTAL,
+  MEMBER_COUNT,
+} from "tribute-contracts/utils/ContractUtil.js";
+
+import { getContract } from "../../utils/contract.js";
+import { normalizeString } from "../../utils/string.js";
+import { numberRangeArray } from "../../utils/array.js";
+import {
   submitSnapshotVote,
   getSnapshotVotes,
   getSnapshotProposal,
-} = require("../../services/snapshot-service");
-const { warn } = require("../../utils/logging");
-const { getPriorAmount } = require("../extensions/bank-extension");
-const { SignerV4 } = require("../../utils/signer");
-const { getMemberAddress } = require("../core/dao-registry");
+} from "../../services/snapshot-service.js";
+import { warn } from "../../utils/logging";
+import { getPriorAmount } from "../extensions/bank-extension";
+import { SignerV4 } from "../../utils/signer";
+import { getMemberAddress } from "../core/dao-registry";
 
 const BadNodeError = {
   0: "OK",
@@ -33,7 +33,7 @@ const BadNodeError = {
   4: "BAD_SIGNATURE",
 };
 
-const newOffchainVote = async (
+export const newOffchainVote = async (
   snapshotProposalId,
   daoProposalId,
   choice,
@@ -64,7 +64,10 @@ const newOffchainVote = async (
   });
 };
 
-const submitOffchainResult = async (snapshotProposalId, daoProposalId) => {
+export const submitOffchainResult = async (
+  snapshotProposalId,
+  daoProposalId
+) => {
   const snapshotProposal = await getSnapshotProposal(
     snapshotProposalId,
     configs.space
@@ -217,5 +220,3 @@ const submitOffchainResult = async (snapshotProposalId, daoProposalId) => {
     voteResultHexRoot: voteResultTree.getHexRoot(),
   };
 };
-
-module.exports = { newOffchainVote, submitOffchainResult };

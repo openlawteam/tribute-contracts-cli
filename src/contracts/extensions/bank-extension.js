@@ -1,5 +1,5 @@
 const { getContract } = require("../../utils/contract");
-const { configs } = require("../../../cli-config");
+const { configs } = require("../../../cli.config");
 
 const getBalanceOf = async (memberAddress, tokenAddr) => {
   const { contract } = getContract(

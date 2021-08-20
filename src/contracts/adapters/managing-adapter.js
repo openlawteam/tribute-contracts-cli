@@ -1,25 +1,25 @@
-const Web3 = require("web3");
-const { ethers } = require("ethers");
+import Web3 from "web3";
+import { ethers } from "ethers";
+import { configs } from "../../../cli.config.js";
 const toBytes32 = ethers.utils.formatBytes32String;
-const { configs } = require("../../../cli-config");
 
-const { sha3 } = require("tribute-contracts/utils/ContractUtil");
-const { prepareVoteProposalData } = require("@openlaw/snapshot-js-erc712");
-const { entryDao } = require("tribute-contracts/utils/DeploymentUtil");
-const { getContract } = require("../../utils/contract");
-const { submitSnapshotProposal } = require("../../services/snapshot-service");
-const { parseDaoFlags } = require("../core/dao-registry");
-const { warn } = require("../../utils/logging");
+import { sha3 } from "tribute-contracts/utils/ContractUtil.js";
+import { prepareVoteProposalData } from "@openlaw/snapshot-js-erc712";
+import { entryDao } from "tribute-contracts/utils/DeploymentUtil.js";
+import { getContract } from "../../utils/contract.js";
+import { submitSnapshotProposal } from "../../services/snapshot-service.js";
+import { parseDaoFlags } from "../core/dao-registry.js";
+import { warn } from "../../utils/logging.js";
 
-const submitManagingProposal = async (
+export const submitManagingProposal = async ({
   adapterName,
   adapterAddress,
   aclFlags,
   keys,
   values,
   data,
-  opts
-) => {
+  opts,
+}) => {
   const configKeys = keys ? keys.split(",").map((k) => toBytes32(k)) : [];
   const configValues = values ? values.split(",").map((v) => v) : [];
   const configAclFlags = parseDaoFlags(aclFlags);
@@ -80,7 +80,7 @@ const submitManagingProposal = async (
   });
 };
 
-const processManagingProposal = async (daoProposalId) => {
+export const processManagingProposal = async (daoProposalId) => {
   const { contract, wallet } = getContract(
     "ManagingContract",
     configs.contracts.ManagingContract
@@ -92,5 +92,3 @@ const processManagingProposal = async (daoProposalId) => {
 
   return { daoProposalId };
 };
-
-module.exports = { submitManagingProposal, processManagingProposal };

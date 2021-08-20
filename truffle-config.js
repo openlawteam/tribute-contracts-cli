@@ -1,4 +1,4 @@
-module.exports = {
+export const configs = {
   contracts_directory: "./node_modules/tribute-contracts/contracts",
   contracts_build_directory: "./build/contracts",
   networks: {
@@ -10,7 +10,7 @@ module.exports = {
     },
     rinkeby: {
       provider: () => {
-        const HDWalletProvider = require("@truffle/hdwallet-provider");
+        import HDWalletProvider from "@truffle/hdwallet-provider";
         const infuraKey = process.env.INFURA_KEY;
         const alchemyKey = process.env.ALCHEMY_KEY;
         const mnemonic = process.env.TRUFFLE_MNEMONIC;
@@ -36,7 +36,7 @@ module.exports = {
     },
     mainnet: {
       provider: () => {
-        const HDWalletProvider = require("@truffle/hdwallet-provider");
+        import HDWalletProvider from "@truffle/hdwallet-provider";
         const infuraKey = process.env.INFURA_KEY;
         const alchemyKey = process.env.ALCHEMY_KEY;
         const mnemonic = process.env.TRUFFLE_MNEMONIC;

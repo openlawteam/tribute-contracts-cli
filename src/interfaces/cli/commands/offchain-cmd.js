@@ -1,20 +1,15 @@
-const inquirer = require("inquirer");
-const { sha3 } = require("tribute-contracts/utils/ContractUtil");
-const { configs } = require("../../../../cli-config");
-
-const {
-  submitOffchainResult,
-  newOffchainVote,
-} = require("../../../contracts/adapters/offchain-voting-adapter");
-const {
+import inquirer from "inquirer";
+import { sha3 } from "tribute-contracts/utils/ContractUtil.js";
+import { configs } from "../../../../cli.config.js";
+import {
   logEnvConfigs,
   success,
   notice,
   info,
   error,
-} = require("../../../utils/logging");
+} from "../../../utils/logging.js";
 
-const offchainCommands = (program) => {
+export const offchainCommands = (program) => {
   program
     .command("new-offchain-vote <snapshotProposalId> [data]")
     .description(
@@ -80,5 +75,3 @@ const offchainCommands = (program) => {
 
   return program;
 };
-
-module.exports = { offchainCommands };

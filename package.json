@@ -2,25 +2,43 @@
   "name": "tribute-contracts-cli",
   "version": "0.1.0",
   "description": "A command line interface tool to interact with @openlaw/tribute-contracts.",
-  "main": "cli.js",
+  "main": "index.js",
+  "type": "module",
+  "bin": {
+    "trib": "./index.js"
+  },
   "scripts": {
     "compile": "truffle compile",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "truffle test"
   },
-  "author": "dev@openlaw.io",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/openlawteam/snapshot-js-erc712.git"
+  },
+  "author": "OpenLaw Dev Team",
+  "bugs": {
+    "url": "https://github.com/openlawteam/tribute-contracts-cli/issues"
+  },
   "license": "MIT",
   "dependencies": {
     "@openlaw/snapshot-js-erc712": "1.2.0",
-    "@truffle/hdwallet-provider": "^1.4.3",
+    "@truffle/hdwallet-provider": "1.4.3",
     "chalk": "^4.1.2",
     "commander": "^8.1.0",
     "dotenv": "^10.0.0",
+    "esm": "^3.2.25",
     "eth-sig-util": "3.0.1",
     "ethereumjs-util": "7.1.0",
     "ethers": "5.4.5",
     "inquirer": "^8.1.2",
-    "tribute-contracts": "^1.0.1",
+    "tribute-contracts": "1.0.1",
     "truffle": "5.4.6",
-    "web3": "^1.4.0"
+    "web3": "1.4.0"
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.15.0",
+    "babel-jest": "^27.0.6",
+    "jest": "^27.0.6",
+    "msw": "^0.34.0"
   }
 }
