@@ -20,7 +20,7 @@ const {
   getSnapshotVotes,
   getSnapshotProposal,
 } = require("../../services/snapshot-service");
-const { info, notice, warn, logEnvConfigs } = require("../../utils/logging");
+const { warn } = require("../../utils/logging");
 const { getPriorAmount } = require("../extensions/bank-extension");
 const { SignerV4 } = require("../../utils/signer");
 const { getMemberAddress } = require("../core/dao-registry");

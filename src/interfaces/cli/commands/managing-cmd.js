@@ -12,6 +12,7 @@ const {
   notice,
   info,
   logEnvConfigs,
+  error,
 } = require("../../../utils/logging");
 const { sha3 } = require("tribute-contracts/utils/ContractUtil");
 
@@ -53,7 +54,8 @@ const managingCommands = (program) => {
         .then((data) => {
           success(`New Snapshot Proposal Id: ${data.snapshotProposalId}\n`);
           notice(`::: Managing proposal submitted!\n`);
-        });
+        })
+        .catch((err) => error("Error while submitting managing proposal", err));
     });
 
   program
@@ -67,11 +69,15 @@ const managingCommands = (program) => {
       info(`Snapshot Proposal Id:\t${snapshotProposalId}`);
       info(`DAO Proposal Id:\t${daoProposalId}`);
 
-      await processManagingProposal(
+      return processManagingProposal(
         snapshotProposalId,
         daoProposalId,
         program.opts()
-      );
+      )
+        .then((res) => {
+          success(`\n::: Processed Managing proposal\n`);
+        })
+        .catch((err) => error("Error while processing managing proposal", err));
     });
 
   return program;

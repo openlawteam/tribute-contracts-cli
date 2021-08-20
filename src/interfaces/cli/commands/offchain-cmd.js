@@ -6,7 +6,13 @@ const {
   submitOffchainResult,
   newOffchainVote,
 } = require("../../../contracts/adapters/offchain-voting-adapter");
-const { logEnvConfigs, success, notice, info } = require("../../../utils/logging");
+const {
+  logEnvConfigs,
+  success,
+  notice,
+  info,
+  error,
+} = require("../../../utils/logging");
 
 const offchainCommands = (program) => {
   program
@@ -45,7 +51,8 @@ const offchainCommands = (program) => {
           notice(`Member ${res.memberAddress} has voted "${res.choice}"\n`);
           notice(`Snapshot Proposal Id ${snapshotProposalId}\n`);
           success("::: Offchain vote submitted to Snapshot Hub.");
-        });
+        })
+        .catch((err) => error("Error while voting on proposal", err));
     });
 
   program
@@ -62,12 +69,13 @@ const offchainCommands = (program) => {
       info(`Snapshot Proposal Id:\t${snapshotProposalId}`);
       info(`DAO Proposal Id:\t${daoProposalId}`);
 
-      return submitOffchainResult(snapshotProposalId, daoProposalId).then(
-        (res) => {
+      return submitOffchainResult(snapshotProposalId, daoProposalId)
+        .then((res) => {
           notice(`DAO Proposal Id ${res.daoProposalId}\n`);
+          notice(`Snapshot Proposal Id ${res.snapshotProposalId}\n`);
           success(`::: Offchain vote results submitted to the DAO`);
-        }
-      );
+        })
+        .catch((err) => error("Error while submitting vote results", err));
     });
 
   return program;

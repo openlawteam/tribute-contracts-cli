@@ -80,19 +80,17 @@ const submitManagingProposal = async (
   });
 };
 
-const processManagingProposal = (daoProposalId) => {
+const processManagingProposal = async (daoProposalId) => {
   const { contract, wallet } = getContract(
     "ManagingContract",
     configs.contracts.ManagingContract
   );
 
-  return contract.processProposal(
-    configs.contracts.DaoRegistry,
-    daoProposalId,
-    {
-      from: wallet.address,
-    }
-  );
+  await contract.processProposal(configs.contracts.DaoRegistry, daoProposalId, {
+    from: wallet.address,
+  });
+
+  return { daoProposalId };
 };
 
 module.exports = { submitManagingProposal, processManagingProposal };

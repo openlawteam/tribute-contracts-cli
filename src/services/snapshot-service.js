@@ -55,13 +55,10 @@ const buildProposalMessageHelper = async (
 };
 
 const signAndSendProposal = async (proposal, provider, wallet) => {
-  const { partialProposalData, adapterAddress, type, space, dao, network } =
-    proposal;
+  const { partialProposalData, actionId, space, dao, network } = proposal;
 
   // When using ganache, the getNetwork call always returns UNKNOWN, so we ignore that.
   const { chainId } = await provider.getNetwork();
-
-  const actionId = adapterAddress;
 
   const { body, name, metadata, timestamp } = partialProposalData;
 
@@ -183,7 +180,7 @@ const signAndSendVote = async (vote, provider, wallet) => {
 const submitSnapshotProposal = (
   title,
   description,
-  adapter,
+  actionId,
   provider,
   wallet
 ) => {
@@ -198,7 +195,7 @@ const submitSnapshotProposal = (
       },
       type: SnapshotType.proposal,
       space: configs.space,
-      adapterAddress: adapter,
+      actionId,
       network: configs.network,
       dao: configs.contracts.DaoRegistry,
     },
