@@ -1,6 +1,6 @@
 const { sha3 } = require("tribute-contracts/utils/ContractUtil");
-const { getContract } = require("../utils/contract");
-const { configs } = require("../../cli-config");
+const { getContract } = require("../../utils/contract");
+const { configs } = require("../../../cli-config");
 
 const getDAOConfig = async (configKey) => {
   const { contract } = getContract(

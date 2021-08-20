@@ -3,7 +3,7 @@ const inquirer = require("inquirer");
 const {
   submitOffchainResult,
   newOffchainVote,
-} = require("../../adapters/offchain-voting-adapter");
+} = require("../../../contracts/adapters/offchain-voting-adapter");
 
 const offchainCommands = (program) => {
   program

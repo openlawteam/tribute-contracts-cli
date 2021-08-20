@@ -1,13 +1,13 @@
 const Web3 = require("web3");
 const { ethers } = require("ethers");
 const toBytes32 = ethers.utils.formatBytes32String;
-const { configs } = require("../../cli-config");
+const { configs } = require("../../../cli-config");
 
 const { sha3 } = require("tribute-contracts/utils/ContractUtil");
 const { prepareVoteProposalData } = require("@openlaw/snapshot-js-erc712");
 const { entryDao } = require("tribute-contracts/utils/DeploymentUtil");
-const { getContract } = require("../utils/contract");
-const { submitSnapshotProposal } = require("../utils/snapshot");
+const { getContract } = require("../../utils/contract");
+const { submitSnapshotProposal } = require("../../services/snapshot-service");
 const { parseDaoFlags } = require("../core/dao-registry");
 const {
   info,
@@ -15,7 +15,7 @@ const {
   warn,
   success,
   logEnvConfigs,
-} = require("../utils/logging");
+} = require("../../utils/logging");
 
 const submitManagingProposal = async (
   adapterName,

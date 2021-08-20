@@ -1,19 +1,19 @@
 const {
   buildProposalMessage,
-  getSpace,
+  buildVoteMessage,
   prepareProposalMessage,
   prepareVoteMessage,
   submitMessage,
-  buildVoteMessage,
-  SnapshotType,
+  getSpace,
   getVotes,
   getProposals,
+  SnapshotType,
 } = require("@openlaw/snapshot-js-erc712");
+
 const { configs } = require("../../cli-config");
-const { notice, error, success } = require("./logging");
-const { getDAOConfig } = require("../core/dao-registry");
+const { error } = require("../utils/logging");
+const { getDAOConfig } = require("../contracts/core/dao-registry");
 const { SignerV4 } = require("../utils/signer");
-const { normalize } = require("eth-sig-util");
 
 const ContractDAOConfigKeys = {
   offchainVotingGracePeriod: "offchainvoting.gracePeriod",

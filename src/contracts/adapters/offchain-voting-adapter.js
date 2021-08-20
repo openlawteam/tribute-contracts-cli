@@ -1,4 +1,4 @@
-const { configs } = require("../../cli-config");
+const { configs } = require("../../../cli-config");
 const {
   sha3,
   UNITS,
@@ -12,27 +12,17 @@ const {
   getOffchainVotingProof,
   submitOffchainVotingProof,
 } = require("@openlaw/snapshot-js-erc712");
-const { getContract } = require("../utils/contract");
-const { normalizeString } = require("../utils/string");
-const { numberRangeArray } = require("../utils/array");
+const { getContract } = require("../../utils/contract");
+const { normalizeString } = require("../../utils/string");
+const { numberRangeArray } = require("../../utils/array");
 const {
   submitSnapshotVote,
   getSnapshotVotes,
   getSnapshotProposal,
-} = require("../utils/snapshot");
-const {
-  info,
-  notice,
-  warn,
-  success,
-  logEnvConfigs,
-  error,
-} = require("../utils/logging");
-const {
-  getBalanceOf,
-  getPriorAmount,
-} = require("../extensions/bank-extension");
-const { SignerV4 } = require("../utils/signer");
+} = require("../../services/snapshot-service");
+const { info, notice, warn, logEnvConfigs } = require("../../utils/logging");
+const { getPriorAmount } = require("../extensions/bank-extension");
+const { SignerV4 } = require("../../utils/signer");
 const { getMemberAddress } = require("../core/dao-registry");
 
 const BadNodeError = {

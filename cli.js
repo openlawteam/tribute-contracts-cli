@@ -4,8 +4,12 @@ require("dotenv").config({ path: ".env" });
 const { configs } = require("./cli-config");
 
 const { error, notice } = require("./src/utils/logging");
-const { managingCommands } = require("./src/cli/command/managing-cmd");
-const { offchainCommands } = require("./src/cli/command/offchain-cmd");
+const {
+  managingCommands,
+} = require("./src/interfaces/cli/commands/managing-cmd");
+const {
+  offchainCommands,
+} = require("./src/interfaces/cli/commands/offchain-cmd");
 
 const { Command } = require("commander");
 const program = new Command();

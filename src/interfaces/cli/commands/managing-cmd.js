@@ -3,9 +3,9 @@ const inquirer = require("inquirer");
 const {
   submitManagingProposal,
   processManagingProposal,
-} = require("../../adapters/managing-adapter");
+} = require("../../../contracts/adapters/managing-adapter");
 
-const { daoAccessFlags } = require("../../core/dao-registry");
+const { daoAccessFlags } = require("../../../contracts/core/dao-registry");
 
 const managingCommands = (program) => {
   program
