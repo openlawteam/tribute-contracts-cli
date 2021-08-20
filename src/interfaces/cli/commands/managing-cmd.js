@@ -5,7 +5,15 @@ const {
   processManagingProposal,
 } = require("../../../contracts/adapters/managing-adapter");
 
+const { configs } = require("../../../../cli-config");
 const { daoAccessFlags } = require("../../../contracts/core/dao-registry");
+const {
+  success,
+  notice,
+  info,
+  logEnvConfigs,
+} = require("../../../utils/logging");
+const { sha3 } = require("tribute-contracts/utils/ContractUtil");
 
 const managingCommands = (program) => {
   program
@@ -23,8 +31,16 @@ const managingCommands = (program) => {
             choices: daoAccessFlags.map((f) => Object.assign({ name: f })),
           },
         ])
-        .then((anwsers) =>
-          submitManagingProposal(
+        .then((anwsers) => {
+          notice(`\n ::: Submitting Managing proposal...\n`);
+          logEnvConfigs(configs, configs.contracts.ManagingContract);
+          info(`Adapter:\t\t${adapterName} @ ${adapterAddress}`);
+          info(`AccessFlags:\t\t${JSON.stringify(anwsers.aclFlags)}`);
+          info(`Keys:\t\t\t${keys ? keys : "n/a"}`);
+          info(`Values:\t\t\t${values ? values : "n/a"}`);
+          info(`Data:\t\t\t${data ? data : "n/a"}\n`);
+
+          return submitManagingProposal(
             adapterName,
             adapterAddress,
             anwsers.aclFlags,
@@ -32,16 +48,31 @@ const managingCommands = (program) => {
             values,
             data,
             program.opts()
-          )
-        );
+          );
+        })
+        .then((data) => {
+          success(`New Snapshot Proposal Id: ${data.snapshotProposalId}\n`);
+          notice(`::: Managing proposal submitted!\n`);
+        });
     });
 
   program
-    .command("process-managing-proposal <proposalId>")
+    .command("process-managing-proposal <snapshotProposalId>")
     .description("Process an existing managing proposal.")
-    .action((proposalId) =>
-      processManagingProposal(proposalId, program.opts())
-    );
+    .action(async (snapshotProposalId) => {
+      const daoProposalId = sha3(snapshotProposalId);
+
+      notice(`\n::: Processing Managing proposal...\n`);
+      logEnvConfigs(configs, configs.contracts.ManagingContract);
+      info(`Snapshot Proposal Id:\t${snapshotProposalId}`);
+      info(`DAO Proposal Id:\t${daoProposalId}`);
+
+      await processManagingProposal(
+        snapshotProposalId,
+        daoProposalId,
+        program.opts()
+      );
+    });
 
   return program;
 };
