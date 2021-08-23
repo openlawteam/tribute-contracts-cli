@@ -8,8 +8,8 @@
     "trib": "./index.js"
   },
   "scripts": {
-    "compile": "truffle compile",
-    "test": "truffle test"
+    "compile": "hardhat compile",
+    "test": "hardhat test"
   },
   "repository": {
     "type": "git",
@@ -22,7 +22,6 @@
   "license": "MIT",
   "dependencies": {
     "@openlaw/snapshot-js-erc712": "1.2.0",
-    "@truffle/hdwallet-provider": "1.4.3",
     "chalk": "^4.1.2",
     "commander": "^8.1.0",
     "dotenv": "^10.0.0",
@@ -32,12 +31,12 @@
     "ethers": "5.4.5",
     "inquirer": "^8.1.2",
     "tribute-contracts": "1.0.1",
-    "truffle": "5.4.6",
     "web3": "1.4.0"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.15.0",
     "babel-jest": "^27.0.6",
+    "hardhat": "^2.6.1",
     "jest": "^27.0.6",
     "msw": "^0.34.0"
   }
