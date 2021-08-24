@@ -11,7 +11,8 @@
   },
   "scripts": {
     "compile": "truffle compile",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "release": "np"
   },
   "author": "dev@openlaw.io",
   "license": "MIT",
@@ -28,5 +29,8 @@
     "tribute-contracts": "^1.0.1",
     "truffle": "5.4.6",
     "web3": "^1.4.0"
+  },
+  "devDependencies": {
+    "np": "^7.5.0"
   }
 }

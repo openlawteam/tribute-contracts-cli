@@ -1,6 +1,7 @@
 .vscode
 .env
+contracts.js
 node_modules/
 build/
-contracts.js
 cache/
+*.tgz

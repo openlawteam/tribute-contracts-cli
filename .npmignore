@@ -1,0 +1,10 @@
+.env
+.gitignore
+.github/
+.vscode/
+build/
+cache/
+test/
+node_modules/
+contracts.js
+*.tgz
