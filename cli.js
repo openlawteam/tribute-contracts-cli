@@ -10,12 +10,15 @@ const {
 const {
   offchainCommands,
 } = require("./src/interfaces/cli/commands/offchain-cmd");
-
+const { readFile } = require("fs/promises");
 const { Command } = require("commander");
 const program = new Command();
 program.version("0.0.1");
 
-const main = () => {
+const main = async () => {
+  const pkg = JSON.parse(await readFile("./package.json"));
+  program.version(pkg.version);
+
   program
     .command("list")
     .description("List all contracts available to interact with.")
