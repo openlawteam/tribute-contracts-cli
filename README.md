@@ -55,3 +55,9 @@ From the root folder of the project:
 
 > npm link
 > trib --help
+
+### Version Compatibility
+
+| Contracts |     UI       |    CLI   | Snapshot
+:----------:|:------------:|:--------:|:--------:|
+ v1.0.0     | v1.1.0       | v0.1.0   | v1.2.0
