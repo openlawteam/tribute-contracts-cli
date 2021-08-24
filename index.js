@@ -1,21 +1,19 @@
 #!/usr/bin/env node
 
-require("dotenv").config({ path: ".env" });
-const { configs } = require("./cli-config");
-
-const { error, notice } = require("./src/utils/logging");
-const {
-  managingCommands,
-} = require("./src/interfaces/cli/commands/managing-cmd");
-const {
-  offchainCommands,
-} = require("./src/interfaces/cli/commands/offchain-cmd");
-
-const { Command } = require("commander");
+import { configs } from "./cli.config.js";
+import { error, notice } from "./src/utils/logging.js";
+import { managingCommands } from "./src/interfaces/cli/commands/managing-cmd.js";
+import { offchainCommands } from "./src/interfaces/cli/commands/offchain-cmd.js";
+import { Command } from "commander";
 const program = new Command();
-program.version("0.0.1");
+import { readFile } from "fs/promises";
 
-const main = () => {
+const main = async () => {
+  const pkg = JSON.parse(
+    await readFile(new URL("./package.json", import.meta.url))
+  );
+  program.version(pkg.version);
+
   program
     .command("list")
     .description("List all contracts available to interact with.")

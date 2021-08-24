@@ -1,20 +1,19 @@
-const inquirer = require("inquirer");
-const { sha3 } = require("tribute-contracts/utils/ContractUtil");
-const { configs } = require("../../../../cli-config");
-
-const {
-  submitOffchainResult,
+import inquirer from "inquirer";
+import { sha3 } from "tribute-contracts/utils/ContractUtil.js";
+import { configs } from "../../../../cli.config.js";
+import {
   newOffchainVote,
-} = require("../../../contracts/adapters/offchain-voting-adapter");
-const {
+  submitOffchainResult,
+} from "../../../contracts/adapters/offchain-voting-adapter.js";
+import {
   logEnvConfigs,
   success,
   notice,
   info,
   error,
-} = require("../../../utils/logging");
+} from "../../../utils/logging.js";
 
-const offchainCommands = (program) => {
+export const offchainCommands = (program) => {
   program
     .command("new-offchain-vote <snapshotProposalId> [data]")
     .description(
@@ -40,12 +39,12 @@ const offchainCommands = (program) => {
           info(`Choice:\t\t\t${vote.choice}`);
           info(`Data:\t\t\t${data ? data : "n/a"}\n`);
 
-          return newOffchainVote(
+          return newOffchainVote({
             snapshotProposalId,
             daoProposalId,
-            vote.choice,
-            data
-          );
+            choice: vote.choice,
+            data,
+          });
         })
         .then((res) => {
           notice(`Member ${res.memberAddress} has voted "${res.choice}"\n`);
@@ -80,5 +79,3 @@ const offchainCommands = (program) => {
 
   return program;
 };
-
-module.exports = { offchainCommands };

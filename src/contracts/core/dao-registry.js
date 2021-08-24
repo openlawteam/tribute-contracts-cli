@@ -1,8 +1,8 @@
-const { sha3 } = require("tribute-contracts/utils/ContractUtil");
-const { getContract } = require("../../utils/contract");
-const { configs } = require("../../../cli-config");
+import { sha3 } from "tribute-contracts/utils/ContractUtil.js";
+import { getContract } from "../../utils/contract.js";
+import { configs } from "../../../cli.config.js";
 
-const getDAOConfig = async (configKey) => {
+export const getDAOConfig = async (configKey) => {
   const { contract } = getContract(
     "DaoRegistry",
     configs.contracts.DaoRegistry
@@ -10,7 +10,7 @@ const getDAOConfig = async (configKey) => {
   return await contract.getConfiguration(sha3(configKey));
 };
 
-const getAddressIfDelegated = async (memberAddress) => {
+export const getAddressIfDelegated = async (memberAddress) => {
   const { contract } = getContract(
     "DaoRegistry",
     configs.contracts.DaoRegistry
@@ -18,7 +18,7 @@ const getAddressIfDelegated = async (memberAddress) => {
   return await contract.getAddressIfDelegated(memberAddress);
 };
 
-const getMemberAddress = async (memberIndex) => {
+export const getMemberAddress = async (memberIndex) => {
   const { contract } = getContract(
     "DaoRegistry",
     configs.contracts.DaoRegistry
@@ -27,7 +27,7 @@ const getMemberAddress = async (memberIndex) => {
 };
 
 // TODO import from "tribute-contracts/utils/DeploymentUtil" v2.0.3
-const daoAccessFlags = [
+export const daoAccessFlags = [
   "REPLACE_ADAPTER",
   "SUBMIT_PROPOSAL",
   "UPDATE_DELEGATE_KEY",
@@ -37,7 +37,7 @@ const daoAccessFlags = [
   "NEW_MEMBER",
 ];
 // TODO import from "tribute-contracts/utils/DeploymentUtil" v2.0.3
-const parseDaoFlags = (aclFlags) => {
+export const parseDaoFlags = (aclFlags) => {
   return aclFlags
     .map((f) => f.toUpperCase())
     .reduce((flags, flag) => {
@@ -46,12 +46,4 @@ const parseDaoFlags = (aclFlags) => {
       }
       throw Error(`Invalid DAO Access Flag: ${flag}`);
     }, {});
-};
-
-module.exports = {
-  daoAccessFlags,
-  getDAOConfig,
-  parseDaoFlags,
-  getAddressIfDelegated,
-  getMemberAddress,
 };

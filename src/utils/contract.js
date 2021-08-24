@@ -1,8 +1,8 @@
-const { ethers } = require("ethers");
-const fs = require("fs");
-const path = require("path");
-const { configs } = require("../../cli-config");
-const { getNetworkDetails } = require("tribute-contracts/utils/DeploymentUtil");
+import { ethers } from "ethers";
+import fs from "fs";
+import path from "path";
+import { configs } from "../../cli.config.js";
+import { getNetworkDetails } from "tribute-contracts/utils/DeploymentUtil.js";
 
 const openWallet = (provider) => {
   // The Wallet class inherits Signer and can sign transactions
@@ -46,12 +46,12 @@ const getABI = (contractName) => {
   return contract.abi;
 };
 
-const attachContract = (address, abi, wallet) => {
+export const attachContract = (address, abi, wallet) => {
   const contract = new ethers.Contract(address, abi, wallet);
   return contract.connect(wallet);
 };
 
-const getContract = (name, contract) => {
+export const getContract = (name, contract) => {
   const provider = getProvider(configs.network);
   const wallet = openWallet(provider);
   return {
@@ -60,5 +60,3 @@ const getContract = (name, contract) => {
     wallet,
   };
 };
-
-module.exports = { attachContract, getContract };

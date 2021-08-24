@@ -1,22 +1,20 @@
-const inquirer = require("inquirer");
-
-const {
-  submitManagingProposal,
-  processManagingProposal,
-} = require("../../../contracts/adapters/managing-adapter");
-
-const { configs } = require("../../../../cli-config");
-const { daoAccessFlags } = require("../../../contracts/core/dao-registry");
-const {
+import inquirer from "inquirer";
+import { sha3 } from "tribute-contracts/utils/ContractUtil.js";
+import { configs } from "../../../../cli.config.js";
+import {
   success,
   notice,
   info,
   logEnvConfigs,
   error,
-} = require("../../../utils/logging");
-const { sha3 } = require("tribute-contracts/utils/ContractUtil");
+} from "../../../utils/logging.js";
+import {
+  submitManagingProposal,
+  processManagingProposal,
+} from "../../../contracts/adapters/managing-adapter.js";
+import { daoAccessFlags } from "../../../contracts/core/dao-registry.js";
 
-const managingCommands = (program) => {
+export const managingCommands = (program) => {
   program
     .command(
       "submit-managing-proposal <adapterId> <adapterAddress> [keys] [values] [data]"
@@ -41,15 +39,15 @@ const managingCommands = (program) => {
           info(`Values:\t\t\t${values ? values : "n/a"}`);
           info(`Data:\t\t\t${data ? data : "n/a"}\n`);
 
-          return submitManagingProposal(
+          return submitManagingProposal({
             adapterName,
             adapterAddress,
-            anwsers.aclFlags,
+            aclFlags: anwsers.aclFlags,
             keys,
             values,
             data,
-            program.opts()
-          );
+            opts: program.opts(),
+          });
         })
         .then((data) => {
           success(`New Snapshot Proposal Id: ${data.snapshotProposalId}\n`);
@@ -69,11 +67,10 @@ const managingCommands = (program) => {
       info(`Snapshot Proposal Id:\t${snapshotProposalId}`);
       info(`DAO Proposal Id:\t${daoProposalId}`);
 
-      return processManagingProposal(
-        snapshotProposalId,
+      return processManagingProposal({
         daoProposalId,
-        program.opts()
-      )
+        opts: program.opts(),
+      })
         .then((res) => {
           success(`\n::: Processed Managing proposal\n`);
         })
@@ -82,5 +79,3 @@ const managingCommands = (program) => {
 
   return program;
 };
-
-module.exports = { managingCommands };
