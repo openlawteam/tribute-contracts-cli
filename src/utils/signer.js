@@ -5,7 +5,7 @@ const {
 } = require("@openlaw/snapshot-js-erc712");
 
 const SignerV4 = (privateKeyStr) => {
-  return function (msg, verifyingContract, actionId, chainId) {
+  return (msg, verifyingContract, actionId, chainId) => {
     const message = prepareMessage(msg);
     if (privateKeyStr.indexOf("0x") === 0) {
       privateKeyStr = privateKeyStr.slice(2);

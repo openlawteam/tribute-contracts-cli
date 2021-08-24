@@ -1,4 +1,5 @@
 const { ethers } = require("ethers");
+const { configs } = require("./cli-config");
 
 module.exports = {
   contracts_directory: "./node_modules/tribute-contracts/contracts",
@@ -12,30 +13,12 @@ module.exports = {
     },
     rinkeby: {
       provider: () => {
-        const HDWalletProvider = require("@truffle/hdwallet-provider");
-        const infuraKey = process.env.INFURA_KEY;
-        const alchemyKey = process.env.ALCHEMY_KEY;
-        const mnemonic = process.env.TRUFFLE_MNEMONIC;
-
-        let url;
-        if (alchemyKey) {
-          url = `wss://eth-rinkeby.ws.alchemyapi.io/v2/${alchemyKey}`;
-        } else {
-          url = `wss://rinkeby.infura.io/ws/v3/${infuraKey}`;
-        }
-        return ethers.getDefaultProvider(network, {
-          mnemonic: {
-            phrase: mnemonic,
-          },
-          etherscan: alchemyKey,
+        const provider = ethers.getDefaultProvider(network, {
+          alchemyKey: configs.alchemyApiKey
+            ? configs.alchemyApiKey
+            : configs.infuraApiKey,
         });
-        // return new HDWalletProvider({
-        //   mnemonic: {
-        //     phrase: mnemonic,
-        //   },
-        //   providerOrUrl: url,
-        //   pollingInterval: 10000,
-        // });
+        return provider;
       },
       network_id: 4,
       skipDryRun: true,
@@ -44,23 +27,12 @@ module.exports = {
     },
     mainnet: {
       provider: () => {
-        const HDWalletProvider = require("@truffle/hdwallet-provider");
-        const infuraKey = process.env.INFURA_KEY;
-        const alchemyKey = process.env.ALCHEMY_KEY;
-        const mnemonic = process.env.TRUFFLE_MNEMONIC;
-
-        let url;
-        if (alchemyKey) {
-          url = `wss://eth-mainnet.ws.alchemyapi.io/v2/${alchemyKey}`;
-        } else {
-          url = `wss://mainnet.infura.io/ws/v3/${infuraKey}`;
-        }
-        return new HDWalletProvider({
-          mnemonic: {
-            phrase: mnemonic,
-          },
-          providerOrUrl: url,
+        const provider = ethers.getDefaultProvider(network, {
+          alchemyKey: configs.alchemyApiKey
+            ? configs.alchemyApiKey
+            : configs.infuraApiKey,
         });
+        return provider;
       },
       network_id: 1,
       skipDryRun: true,
