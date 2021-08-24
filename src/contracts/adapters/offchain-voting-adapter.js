@@ -213,6 +213,7 @@ const submitOffchainResult = async (snapshotProposalId, daoProposalId) => {
 
   return {
     daoProposalId,
+    snapshotProposalId,
     signature,
     voteResultHexRoot: voteResultTree.getHexRoot(),
   };
