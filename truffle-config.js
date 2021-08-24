@@ -1,3 +1,5 @@
+const { ethers } = require("ethers");
+
 module.exports = {
   contracts_directory: "./node_modules/tribute-contracts/contracts",
   contracts_build_directory: "./build/contracts",
@@ -21,13 +23,19 @@ module.exports = {
         } else {
           url = `wss://rinkeby.infura.io/ws/v3/${infuraKey}`;
         }
-        return new HDWalletProvider({
+        return ethers.getDefaultProvider(network, {
           mnemonic: {
             phrase: mnemonic,
           },
-          providerOrUrl: url,
-          pollingInterval: 10000,
+          etherscan: alchemyKey,
         });
+        // return new HDWalletProvider({
+        //   mnemonic: {
+        //     phrase: mnemonic,
+        //   },
+        //   providerOrUrl: url,
+        //   pollingInterval: 10000,
+        // });
       },
       network_id: 4,
       skipDryRun: true,

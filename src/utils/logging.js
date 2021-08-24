@@ -24,7 +24,7 @@ const logEnvConfigs = (configs, contract) => {
   info(`Network:\t\t${configs.network}`);
   info(`DAO:\t\t\t${configs.contracts.DaoRegistry}`);
   info(`Space:\t\t\t${configs.space}`);
-  info(`Contract:\t\t${contract}`);
+  if (contract) info(`Contract:\t\t${contract}`);
 };
 
 module.exports = { warn, success, notice, error, info, logEnvConfigs };

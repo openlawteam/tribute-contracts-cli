@@ -26,6 +26,14 @@ const getMemberAddress = async (memberIndex) => {
   return await contract.getMemberAddress(memberIndex);
 };
 
+const getAdapterAddress = async (adapterId) => {
+  const { contract } = getContract(
+    "DaoRegistry",
+    configs.contracts.DaoRegistry
+  );
+  return await contract.getAdapterAddress(adapterId);
+}
+
 // TODO import from "tribute-contracts/utils/DeploymentUtil" v2.0.3
 const daoAccessFlags = [
   "REPLACE_ADAPTER",
@@ -54,4 +62,5 @@ module.exports = {
   parseDaoFlags,
   getAddressIfDelegated,
   getMemberAddress,
+  getAdapterAddress,
 };

@@ -19,7 +19,7 @@ const { sha3 } = require("tribute-contracts/utils/ContractUtil");
 const managingCommands = (program) => {
   program
     .command(
-      "submit-managing-proposal <adapterId> <adapterAddress> [keys] [values] [data]"
+      "managing-proposal <adapterId> <adapterAddress> [keys] [values] [data]"
     )
     .description("Submit a new managing proposal.")
     .action(async (adapterName, adapterAddress, keys, values, data) => {
@@ -59,7 +59,7 @@ const managingCommands = (program) => {
     });
 
   program
-    .command("process-managing-proposal <snapshotProposalId>")
+    .command("managing-process <snapshotProposalId>")
     .description("Process an existing managing proposal.")
     .action(async (snapshotProposalId) => {
       const daoProposalId = sha3(snapshotProposalId);
@@ -69,11 +69,7 @@ const managingCommands = (program) => {
       info(`Snapshot Proposal Id:\t${snapshotProposalId}`);
       info(`DAO Proposal Id:\t${daoProposalId}`);
 
-      return processManagingProposal(
-        snapshotProposalId,
-        daoProposalId,
-        program.opts()
-      )
+      return processManagingProposal(daoProposalId)
         .then((res) => {
           success(`\n::: Processed Managing proposal\n`);
         })

@@ -16,9 +16,9 @@ const {
 
 const offchainCommands = (program) => {
   program
-    .command("new-offchain-vote <snapshotProposalId> [data]")
+    .command("offchain-vote <snapshotProposalId> [data]")
     .description(
-      "Submit an offchain vote to Snapshot Hub using the snapshot proposal id."
+      "Submits a vote to Snapshot Hub."
     )
     .action(async (snapshotProposalId, data) => {
       await inquirer
@@ -56,9 +56,9 @@ const offchainCommands = (program) => {
     });
 
   program
-    .command("submit-offchain-result <snapshotProposalId>")
+    .command("offchain-result <snapshotProposalId>")
     .description(
-      "Submit an offchain vote result to the DAO using the snapshot proposal id."
+      "Submits the results of the voting to the DAO."
     )
     .action((snapshotProposalId) => {
       const daoProposalId = sha3(snapshotProposalId);
