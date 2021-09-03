@@ -1,7 +1,7 @@
 {
   "name": "tribute-contracts-cli",
   "version": "0.1.1",
-  "description": "A command line interface tool to interact with @openlaw/tribute-contracts.",
+  "description": "A command line interface tool to interact with @openlaw/tribute-contracts",
   "main": "cli.js",
   "bin": {
     "trib": "./cli.js"
@@ -10,14 +10,21 @@
     "test": "test"
   },
   "scripts": {
-    "compile": "truffle compile",
+    "build": "truffle compile",
     "test": "echo \"Error: no test found\"",
     "release": "np"
   },
   "author": "dev@openlaw.io",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/openlawteam/tribute-contract-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/openlawteam/tribute-contracts-cli/issues"
+  },
   "dependencies": {
-    "@openlaw/snapshot-js-erc712": "1.2.0",
+    "@openlaw/snapshot-js-erc712": "1.3.0",
     "chalk": "^4.1.2",
     "commander": "^8.1.0",
     "dotenv": "^10.0.0",
@@ -25,9 +32,9 @@
     "ethereumjs-util": "7.1.0",
     "ethers": "5.4.5",
     "inquirer": "^8.1.2",
-    "tribute-contracts": "^1.0.1",
+    "tribute-contracts": "file:../tribute-contracts/tribute-contracts-2.0.4.tgz",
     "truffle": "5.4.6",
-    "web3": "^1.4.0"
+    "web3": "1.4.0"
   },
   "devDependencies": {
     "np": "^7.5.0"

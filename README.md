@@ -48,9 +48,11 @@ From the root folder of the project:
     ALCHEMY_KEY=...
     ```
 
-### Compile
+### Build
 
-> npm run compile
+> npm run build
+
+
 ### Run
 
 > npm link
@@ -60,4 +62,5 @@ From the root folder of the project:
 
 | Contracts |     UI       |    CLI   | Snapshot
 :----------:|:------------:|:--------:|:--------:|
- v1.0.0     | v1.1.0       | v0.1.1   | v1.2.0
+|v1.0.0     | v1.1.0       | v0.1.1   | v1.2.0   |
+|v2.0.4     | v2.0.4       | v0.2.0   | v1.2.0   |
