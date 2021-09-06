@@ -2,13 +2,13 @@
 
 ### Build
 
-> npm ci
+> npm run build
 
 ### Setup
 
 From the root folder of the project:
 
-- Create the `contracts.js`, and set the contract's names and addresses from your DAO:
+- Rename the `sample-contracts.js` to `contracts.js`, and set the contract's names and addresses from the DAO that you want to interact with:
     ```javascript
     const contracts = {
     // DAO Core Contracts
@@ -36,22 +36,16 @@ From the root folder of the project:
     SNAPSHOT_HUB_SPACE=...
 
     # The Ethereum Network which CLI should interact with: ganache, rinkeby, mainnet
-    ETHEREUM_NETWORK=rinkeby
+    ETHEREUM_NETWORK=...
 
     # Enable DEBUG to see the logs of the CLI interactions with SnapshotHub and DAO
     DEBUG=false
 
-    # Infura Key
+    # You can use either one of the following API keys to connect to eth network (rinkeby/mainnet)
     INFURA_KEY=...
-
-    # Alchemy Key
-    ALCHEMY_KEY=...
+    # ALCHEMY_KEY=...
+    
     ```
-
-### Build
-
-> npm run build
-
 
 ### Run
 
