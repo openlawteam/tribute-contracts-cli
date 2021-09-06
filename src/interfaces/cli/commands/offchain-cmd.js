@@ -16,11 +16,9 @@ const {
 
 const offchainCommands = (program) => {
   program
-    .command("offchain-vote <snapshotProposalId> [data]")
-    .description(
-      "Submits a vote to Snapshot Hub."
-    )
-    .action(async (snapshotProposalId, data) => {
+    .command("vote <snapshotProposalId>")
+    .description("Submits a vote to Snapshot Hub.")
+    .action(async (snapshotProposalId) => {
       await inquirer
         .prompt([
           {
@@ -38,13 +36,11 @@ const offchainCommands = (program) => {
           info(`Snapshot Proposal Id:\t${snapshotProposalId}`);
           info(`DAO Proposal Id:\t${daoProposalId}`);
           info(`Choice:\t\t\t${vote.choice}`);
-          info(`Data:\t\t\t${data ? data : "n/a"}\n`);
 
           return newOffchainVote(
             snapshotProposalId,
             daoProposalId,
-            vote.choice,
-            data
+            vote.choice
           );
         })
         .then((res) => {
@@ -56,10 +52,8 @@ const offchainCommands = (program) => {
     });
 
   program
-    .command("offchain-result <snapshotProposalId>")
-    .description(
-      "Submits the results of the voting to the DAO."
-    )
+    .command("vote-result <snapshotProposalId>")
+    .description("Submits the results of the voting to the DAO.")
     .action((snapshotProposalId) => {
       const daoProposalId = sha3(snapshotProposalId);
 
@@ -71,7 +65,6 @@ const offchainCommands = (program) => {
 
       return submitOffchainResult(snapshotProposalId, daoProposalId)
         .then((res) => {
-          notice(`DAO Proposal Id ${res.daoProposalId}\n`);
           notice(`Snapshot Proposal Id ${res.snapshotProposalId}\n`);
           success(`::: Offchain vote results submitted to the DAO`);
         })

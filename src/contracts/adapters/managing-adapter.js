@@ -50,6 +50,7 @@ const submitManagingProposal = async (
         snapshot: data.payload.snapshot.toString(),
         start: data.payload.start,
       },
+      submitter: wallet.address,
       sig: res.sig,
       space: data.space,
       timestamp: parseInt(data.timestamp),
@@ -76,6 +77,7 @@ const submitManagingProposal = async (
       encodedData ? encodedData : ethers.utils.toUtf8Bytes(""),
       { from: wallet.address }
     );
+
     return { daoProposalId, snapshotProposalId };
   });
 };
