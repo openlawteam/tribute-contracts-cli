@@ -1,6 +1,5 @@
+const hre = require("hardhat");
 const { ethers } = require("ethers");
-const fs = require("fs");
-const path = require("path");
 const { configs } = require("../../cli-config");
 const { getNetworkDetails } = require("tribute-contracts/utils/DeploymentUtil");
 
@@ -37,13 +36,8 @@ const getProvider = (network) => {
 };
 
 const getABI = (contractName) => {
-  const contract = JSON.parse(
-    fs.readFileSync(
-      path.resolve(`build/contracts/${contractName}.json`),
-      "utf8"
-    )
-  );
-  return contract.abi;
+  const artifact = hre.artifacts.readArtifactSync(contractName);
+  return artifact.abi;
 };
 
 const attachContract = (address, abi, wallet) => {
