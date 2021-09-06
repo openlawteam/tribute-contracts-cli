@@ -145,13 +145,12 @@ const submitOffchainResult = async (snapshotProposalId, daoProposalId) => {
   const getBadNodeErrorResponse = await offchainContract.getBadNodeError(
     configs.contracts.DaoRegistry,
     daoProposalId,
-    // `bool submitNewVote`
-    true,
-    voteResultTree.getHexRoot(),
-    snapshot,
-    // `gracePeriodStartingTime` should be `0` as `submitNewVote` is `true`
-    0,
-    resultNodeLast
+    true, // `submitNewVote`
+    voteResultTree.getHexRoot(), // resultRoot
+    snapshot, // blockNumber
+    0, // gracePeriodStartingTime  should be `0` as `submitNewVote` is `true`
+    numberOfDAOMembersAtSnapshot, // nbMembers
+    resultNodeLast // VoteResultNode
   );
 
   if (getBadNodeErrorResponse !== 0 /*OK*/) {
@@ -197,13 +196,15 @@ const submitOffchainResult = async (snapshotProposalId, daoProposalId) => {
   }
 
   // Send the tx
+  const reporter = wallet.address;
   await offchainContract.submitVoteResult(
     configs.contracts.DaoRegistry,
     daoProposalId,
     voteResultTree.getHexRoot(),
+    reporter,
     resultNodeLast,
     signature,
-    { from: wallet.address }
+    { from: reporter }
   );
 
   return {

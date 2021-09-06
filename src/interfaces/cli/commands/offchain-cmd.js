@@ -65,7 +65,6 @@ const offchainCommands = (program) => {
 
       return submitOffchainResult(snapshotProposalId, daoProposalId)
         .then((res) => {
-          notice(`DAO Proposal Id ${res.daoProposalId}\n`);
           notice(`Snapshot Proposal Id ${res.snapshotProposalId}\n`);
           success(`::: Offchain vote results submitted to the DAO`);
         })
