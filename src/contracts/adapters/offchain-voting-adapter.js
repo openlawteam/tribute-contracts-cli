@@ -33,12 +33,7 @@ const BadNodeError = {
   4: "BAD_SIGNATURE",
 };
 
-const newOffchainVote = async (
-  snapshotProposalId,
-  daoProposalId,
-  choice,
-  data
-) => {
+const newOffchainVote = async (snapshotProposalId, daoProposalId, choice) => {
   const { provider, wallet } = getContract(
     "OffchainVotingContract",
     configs.contracts.OffchainVotingContract
