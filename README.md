@@ -63,7 +63,7 @@ From the root folder of the project:
 |    CLI   | Snapshot-JS | Contracts  |  Snapshot Hub |
 |:--------:|:-----------:|:----------:|:------------:|
  [v0.1.1](https://github.com/openlawteam/tribute-contracts-cli/releases/tag/v0.1.1)   | [v1.2.0](https://github.com/openlawteam/snapshot-js-erc712/releases/tag/v1.2.0)      | [v1.0.0](https://github.com/openlawteam/tribute-contracts/releases/tag/v1.0.0)     | [v5.0.0-erc712](https://github.com/openlawteam/snapshot-hub/releases/tag/v5.0.0-erc712)       |
- [v0.2.1](https://github.com/openlawteam/tribute-contracts-cli/releases/tag/v0.2.1)   | [v1.3.0](https://github.com/openlawteam/snapshot-js-erc712/releases/tag/v1.3.0)      | [v2.0.4](https://github.com/openlawteam/tribute-contracts/releases/tag/v2.0.4)     | [v5.0.1-erc712](https://github.com/openlawteam/snapshot-hub/releases/tag/v5.0.1-erc712)      |
+ [v0.2.1](https://github.com/openlawteam/tribute-contracts-cli/releases/tag/v0.2.1)   | [v1.3.0](https://github.com/openlawteam/snapshot-js-erc712/releases/tag/v1.3.0)      | [v2.0.4](https://github.com/openlawteam/tribute-contracts/releases/tag/v2.0.4)     | [v5.0.2-erc712](https://github.com/openlawteam/snapshot-hub/releases/tag/v5.0.2-erc712)      |
 
 
 ### Packages
