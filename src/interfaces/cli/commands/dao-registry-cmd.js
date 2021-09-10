@@ -18,7 +18,7 @@ const daoRegistryCommands = (program) => {
       logEnvConfigs(configs);
       info(`AdapterId:\t\t${adapterId}`);
 
-      return getAdapterAddress(sha3(adapterId))
+      return getAdapterAddress(adapterId)
         .then((data) => {
           success(`Adapter Address: \t${data}\n`);
         })

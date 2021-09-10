@@ -1,6 +1,6 @@
 {
   "name": "tribute-contracts-cli",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A command line interface tool to interact with @openlaw/tribute-contracts.",
   "main": "cli.js",
   "bin": {
@@ -25,7 +25,7 @@
     "ethereumjs-util": "7.1.0",
     "ethers": "5.4.5",
     "inquirer": "^8.1.2",
-    "tribute-contracts": "^1.0.1",
+    "tribute-contracts": "^1.0.2",
     "truffle": "5.4.6",
     "web3": "^1.4.0"
   },
