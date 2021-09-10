@@ -5,16 +5,22 @@ const { configs } = require("../../../cli-config");
 
 const { sha3 } = require("tribute-contracts/utils/ContractUtil");
 const { prepareVoteProposalData } = require("@openlaw/snapshot-js-erc712");
-const { entryDao } = require("tribute-contracts/utils/DeploymentUtil");
+const {
+  entryDao,
+  entryBank,
+} = require("tribute-contracts/utils/DeploymentUtil");
 const { getContract } = require("../../utils/contract");
 const { submitSnapshotProposal } = require("../../services/snapshot-service");
-const { parseDaoFlags } = require("../core/dao-registry");
+const { parseDaoFlags, getExtensionAddress } = require("../core/dao-registry");
+const { parseBankFlags } = require("../extensions/bank-extension");
 const { warn } = require("../../utils/logging");
 
 const submitManagingProposal = async (
+  updateType,
   adapterName,
   adapterAddress,
-  aclFlags,
+  daoAclFlags,
+  extensions,
   keys,
   values,
   data,
@@ -22,12 +28,38 @@ const submitManagingProposal = async (
 ) => {
   const configKeys = keys ? keys.split(",").map((k) => toBytes32(k)) : [];
   const configValues = values ? values.split(",").map((v) => v) : [];
-  const configAclFlags = parseDaoFlags(aclFlags);
+  const configAclFlags = parseDaoFlags(daoAclFlags);
 
   const { contract, provider, wallet } = getContract(
     "ManagingContract",
     configs.contracts.ManagingContract
   );
+
+  let extensionAddresses = [];
+  let extensionAclFlags = [];
+  if (extensions && extensions.length > 0) {
+    for (let i in extensions) {
+      const ext = extensions[i];
+      extensionAddresses.push(await getExtensionAddress(ext.id));
+      switch (ext.id) {
+        case "bank":
+          // Convert the acl flag to the interger flag value
+          extensionAclFlags.push(
+            entryBank({ address: undefined }, parseBankFlags(ext.selectedFlags))
+              .flags
+          );
+          break;
+        default:
+          throw Error(`ACL flag not supported for extension: ${ext.name}`);
+      }
+    }
+  }
+
+  const daoFlags = entryDao(
+    adapterName,
+    { address: adapterAddress },
+    configAclFlags
+  ).flags;
 
   return await submitSnapshotProposal(
     `Adapter: ${adapterName}`,
@@ -64,16 +96,15 @@ const submitManagingProposal = async (
       configs.contracts.DaoRegistry,
       daoProposalId,
       {
-        adapterId: sha3(adapterName),
-        adapterAddress: adapterAddress,
-        flags: entryDao(
-          adapterName,
-          { address: adapterAddress },
-          configAclFlags
-        ).flags,
+        adapterOrExtensionId: sha3(adapterName),
+        adapterOrExtensionAddr: adapterAddress,
+        updateType: updateType,
+        flags: daoFlags,
+        keys: configKeys,
+        values: configValues,
+        extensionAddresses: extensionAddresses,
+        extensionAclFlags: extensionAclFlags,
       },
-      configKeys,
-      configValues,
       encodedData ? encodedData : ethers.utils.toUtf8Bytes(""),
       { from: wallet.address }
     );
