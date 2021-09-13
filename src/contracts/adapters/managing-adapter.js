@@ -23,7 +23,6 @@ const submitManagingProposal = async (
   extensions,
   keys,
   values,
-  data,
   opts
 ) => {
   const configKeys = keys ? keys.split(",").map((k) => toBytes32(k)) : [];

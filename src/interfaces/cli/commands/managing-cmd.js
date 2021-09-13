@@ -21,15 +21,13 @@ const { sha3 } = require("tribute-contracts/utils/ContractUtil");
 
 const managingCommands = (program) => {
   program
-    .command(
-      "managing-proposal <adapterId> <adapterAddress> [keys] [values] [data]"
-    )
+    .command("managing-proposal <adapterId> <adapterAddress> [keys] [values]")
     .description("Submit a new managing proposal.")
-    .action(async (adapterName, adapterAddress, keys, values, data) => {
+    .action(async (adapterName, adapterAddress, keys, values) => {
       const { updateType } = await inquirer.prompt([
         {
           type: "list",
-          message: "Which type of contract are you going to update?",
+          message: "Which type of contract do you want to update?",
           name: "updateType",
           choices: [
             {
@@ -49,7 +47,7 @@ const managingCommands = (program) => {
       const { daoAclFlags } = await inquirer.prompt([
         {
           type: "checkbox",
-          message: "Select the **DAO** ACL Flags or hit ENTER to skip",
+          message: "Select the **DAO** ACL Flags",
           name: "daoAclFlags",
           choices: daoAccessFlags.map((f) => Object.assign({ name: f })),
         },
@@ -67,7 +65,9 @@ const managingCommands = (program) => {
       const { requiredExtensions } = await inquirer.prompt([
         {
           type: "checkbox",
-          message: "Does the adapter needs access to any of these extensions?",
+          message: `Select the extensions that will be used by the ${
+            updateType === 1 ? "Adapter" : "Extension"
+          }`,
           name: "requiredExtensions",
           choices: allExtensions,
         },
@@ -79,7 +79,7 @@ const managingCommands = (program) => {
           const { flags } = await inquirer.prompt([
             {
               type: "checkbox",
-              message: `Select the **${extension.name}** ACL Flags or hit ENTER to skip`,
+              message: `Select the **${extension.name}** ACL Flags`,
               name: "flags",
               choices: extension.aclFlags.map((f) =>
                 Object.assign({ name: f })
@@ -98,7 +98,6 @@ const managingCommands = (program) => {
       info(`AccessFlags:\t\t${JSON.stringify(daoAclFlags)}`);
       info(`Keys:\t\t\t${keys ? keys : "n/a"}`);
       info(`Values:\t\t\t${values ? values : "n/a"}`);
-      info(`Data:\t\t\t${data ? data : "n/a"}`);
       info(
         `Extensions:\t\t${
           extensions
@@ -119,7 +118,6 @@ const managingCommands = (program) => {
         extensions,
         keys,
         values,
-        data,
         program.opts()
       )
         .then((data) => {
