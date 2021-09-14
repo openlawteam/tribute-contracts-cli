@@ -93,7 +93,7 @@ const managingCommands = (program) => {
         }, []);
 
       notice(`\n ::: Submitting Managing proposal...\n`);
-      logEnvConfigs(configs, configs.contracts.ManagingContract);
+      logEnvConfigs(configs);
       info(`Adapter:\t\t${adapterName} @ ${adapterAddress}`);
       info(`AccessFlags:\t\t${JSON.stringify(daoAclFlags)}`);
       info(`Keys:\t\t\t${keys ? keys : "n/a"}`);
@@ -134,7 +134,7 @@ const managingCommands = (program) => {
       const daoProposalId = sha3(snapshotProposalId);
 
       notice(`\n::: Processing Managing proposal...\n`);
-      logEnvConfigs(configs, configs.contracts.ManagingContract);
+      logEnvConfigs(configs);
       info(`Snapshot Proposal Id:\t${snapshotProposalId}`);
       info(`DAO Proposal Id:\t${daoProposalId}`);
 

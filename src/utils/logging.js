@@ -22,7 +22,7 @@ const error = (msg, err) => {
 
 const logEnvConfigs = (configs, contract) => {
   info(`Network:\t\t${configs.network}`);
-  info(`DAO:\t\t\t${configs.contracts.DaoRegistry}`);
+  info(`DAO:\t\t\t${configs.dao}`);
   info(`Space:\t\t\t${configs.space}`);
   if (contract) info(`Contract:\t\t${contract}`);
 };

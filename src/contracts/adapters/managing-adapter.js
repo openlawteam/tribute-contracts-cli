@@ -28,10 +28,11 @@ const submitManagingProposal = async (
   const configKeys = keys ? keys.split(",").map((k) => toBytes32(k)) : [];
   const configValues = values ? values.split(",").map((v) => v) : [];
   const configAclFlags = parseDaoFlags(daoAclFlags);
+  const managingContractAddress = await getAdapterAddress("managing");
 
   const { contract, provider, wallet } = getContract(
     "ManagingContract",
-    configs.contracts.ManagingContract
+    managingContractAddress
   );
 
   let extensionAddresses = [];
@@ -63,7 +64,7 @@ const submitManagingProposal = async (
   return await submitSnapshotProposal(
     `Adapter: ${adapterName}`,
     "Creates/Update adapter",
-    configs.contracts.ManagingContract,
+    managingContractAddress,
     provider,
     wallet
   ).then(async (res) => {
@@ -92,7 +93,7 @@ const submitManagingProposal = async (
     if (opts.debug) warn(`Encoded DAO message: ${encodedData}\n`);
 
     await contract.submitProposal(
-      configs.contracts.DaoRegistry,
+      configs.dao,
       daoProposalId,
       {
         adapterOrExtensionId: sha3(adapterName),
@@ -113,12 +114,13 @@ const submitManagingProposal = async (
 };
 
 const processManagingProposal = async (daoProposalId) => {
+  const managingContractAddress = await getAdapterAddress("managing");
   const { contract, wallet } = getContract(
     "ManagingContract",
-    configs.contracts.ManagingContract
+    managingContractAddress
   );
 
-  await contract.processProposal(configs.contracts.DaoRegistry, daoProposalId, {
+  await contract.processProposal(configs.dao, daoProposalId, {
     from: wallet.address,
   });
 

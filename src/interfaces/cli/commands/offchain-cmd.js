@@ -32,7 +32,7 @@ const offchainCommands = (program) => {
           const daoProposalId = sha3(snapshotProposalId);
 
           notice(`\n ::: Submitting offchain voting...\n`);
-          logEnvConfigs(configs, configs.contracts.OffchainVoting);
+          logEnvConfigs(configs);
           info(`Snapshot Proposal Id:\t${snapshotProposalId}`);
           info(`DAO Proposal Id:\t${daoProposalId}`);
           info(`Choice:\t\t\t${vote.choice}`);
@@ -58,7 +58,7 @@ const offchainCommands = (program) => {
       const daoProposalId = sha3(snapshotProposalId);
 
       notice(`\n ::: Submitting offchain voting results...\n`);
-      logEnvConfigs(configs, configs.contracts.OffchainVotingContract);
+      logEnvConfigs(configs);
 
       info(`Snapshot Proposal Id:\t${snapshotProposalId}`);
       info(`DAO Proposal Id:\t${daoProposalId}`);

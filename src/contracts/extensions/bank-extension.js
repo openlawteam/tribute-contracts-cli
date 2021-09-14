@@ -1,4 +1,5 @@
 const { getContract } = require("../../utils/contract");
+const { getExtensionAddress } = require("../core/dao-registry");
 const { configs } = require("../../../cli-config");
 
 // TODO import from "tribute-contracts/utils/DeploymentUtil" v2.x
@@ -26,18 +27,14 @@ const parseBankFlags = (aclFlags) => {
 };
 
 const getBalanceOf = async (memberAddress, tokenAddr) => {
-  const { contract } = getContract(
-    "BankExtension",
-    configs.contracts.BankExtension
-  );
+  const bankAddress = await getExtensionAddress("bank");
+  const { contract } = getContract("BankExtension", bankAddress);
   return await contract.balanceOf(memberAddress, tokenAddr);
 };
 
 const getPriorAmount = async (account, tokenAddr, blockNumber) => {
-  const { contract } = getContract(
-    "BankExtension",
-    configs.contracts.BankExtension
-  );
+  const bankAddress = await getExtensionAddress("bank");
+  const { contract } = getContract("BankExtension", bankAddress);
   return await contract.getPriorAmount(account, tokenAddr, blockNumber);
 };
 
