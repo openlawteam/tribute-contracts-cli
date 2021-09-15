@@ -11,7 +11,11 @@ const {
 } = require("tribute-contracts/utils/DeploymentUtil");
 const { getContract } = require("../../utils/contract");
 const { submitSnapshotProposal } = require("../../services/snapshot-service");
-const { parseDaoFlags, getExtensionAddress } = require("../core/dao-registry");
+const {
+  parseDaoFlags,
+  getExtensionAddress,
+  getAdapterAddress,
+} = require("../core/dao-registry");
 const { parseBankFlags } = require("../extensions/bank-extension");
 const { warn } = require("../../utils/logging");
 

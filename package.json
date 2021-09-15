@@ -10,7 +10,7 @@
     "test": "test"
   },
   "scripts": {
-    "build": "truffle compile",
+    "compile": "truffle compile",
     "test": "echo \"Error: no test found\"",
     "release": "np"
   },
