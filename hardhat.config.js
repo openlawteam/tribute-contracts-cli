@@ -1,10 +1,6 @@
-const { ethers } = require("ethers");
-const { configs } = require("./cli-config");
+require("dotenv").config({ path: ".env" });
 
-if (!process.env.TRUFFLE_MNEMONIC) {
-  throw new Error("Please set your TRUFFLE_MNEMONIC in a .env file");
-}
-const mnemonic = process.env.TRUFFLE_MNEMONIC;
+const { configs } = require("./cli-config");
 
 module.exports = {
   defaultNetwork: "ganache",
@@ -15,33 +11,19 @@ module.exports = {
       accounts: {
         count: 10,
         initialIndex: 0,
-        mnemonic,
+        mnemonic: configs.mnemonic,
         path: "m/44'/60'/0'/0",
       },
     },
     rinkeby: {
-      provider: () => {
-        const provider = ethers.getDefaultProvider(network, {
-          alchemyKey: configs.alchemyApiKey
-            ? configs.alchemyApiKey
-            : configs.infuraApiKey,
-        });
-        return provider;
-      },
+      url: configs.ethBlockchainApi,
       network_id: 4,
       skipDryRun: true,
       networkCheckTimeout: 10000,
       deploymentPollingInterval: 10000,
     },
     mainnet: {
-      provider: () => {
-        const provider = ethers.getDefaultProvider(network, {
-          alchemyKey: configs.alchemyApiKey
-            ? configs.alchemyApiKey
-            : configs.infuraApiKey,
-        });
-        return provider;
-      },
+      url: configs.ethBlockchainApi,
       network_id: 1,
       skipDryRun: true,
     },

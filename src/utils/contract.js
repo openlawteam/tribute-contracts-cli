@@ -6,7 +6,7 @@ const { getNetworkDetails } = require("tribute-contracts/utils/DeploymentUtil");
 const openWallet = (provider) => {
   // The Wallet class inherits Signer and can sign transactions
   // and messages using a private key as a standard Externally Owned Account (EOA).
-  const wallet = ethers.Wallet.fromMnemonic(configs.truffleMnemonic);
+  const wallet = ethers.Wallet.fromMnemonic(configs.mnemonic);
   return wallet.connect(provider);
 };
 
@@ -16,10 +16,18 @@ const getProvider = (network) => {
 
   switch (network) {
     case "rinkeby":
+      return ethers.getDefaultProvider(network, {
+        url: configs.ethBlockchainApi,
+        network: {
+          chainId: 4,
+        },
+      });
     case "mainnet":
       return ethers.getDefaultProvider(network, {
-        infura: configs.infuraApiKey,
-        alchemy: configs.alchemyApiKey,
+        url: configs.ethBlockchainApi,
+        network: {
+          chainId: 1,
+        },
       });
 
     case "ganache":
