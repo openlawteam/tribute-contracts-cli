@@ -1,6 +1,6 @@
 {
   "name": "tribute-contracts-cli",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "A command line interface tool to interact with @openlaw/tribute-contracts",
   "main": "cli.js",
   "bin": {
