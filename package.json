@@ -13,7 +13,7 @@
     "build": "npm ci && npm run compile",
     "compile": "rimraf build && mkdir -p build/contracts && cp -r node_modules/tribute-contracts/contracts/** build/contracts && hardhat compile",
     "test": "echo \"Error: no test found\"",
-    "release": "np"
+    "release": "np --no-publish"
   },
   "author": "dev@openlaw.io",
   "license": "MIT",
