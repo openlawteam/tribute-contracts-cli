@@ -2,28 +2,32 @@ const Web3 = require("web3");
 const { ethers } = require("ethers");
 const toBytes32 = ethers.utils.formatBytes32String;
 const { configs } = require("../../../cli-config");
-
 const { sha3 } = require("tribute-contracts/utils/ContractUtil");
 const { prepareVoteProposalData } = require("@openlaw/snapshot-js-erc712");
 const {
   entryDao,
   entryBank,
+  entryERC1271,
+  entryExecutor,
+  entryNft,
 } = require("tribute-contracts/utils/DeploymentUtil");
+const {
+  daoAccessFlags,
+  parseSelectedFlags,
+} = require("tribute-contracts/utils/aclFlags");
 const { getContract } = require("../../utils/contract");
 const { submitSnapshotProposal } = require("../../services/snapshot-service");
 const {
-  parseDaoFlags,
   getExtensionAddress,
   getAdapterAddress,
 } = require("../core/dao-registry");
-const { parseBankFlags } = require("../extensions/bank-extension");
 const { warn } = require("../../utils/logging");
 
 const submitManagingProposal = async (
   updateType,
   adapterName,
   adapterAddress,
-  daoAclFlags,
+  selectedDaoAclFlags,
   extensions,
   keys,
   values,
@@ -31,7 +35,11 @@ const submitManagingProposal = async (
 ) => {
   const configKeys = keys ? keys.split(",").map((k) => toBytes32(k)) : [];
   const configValues = values ? values.split(",").map((v) => v) : [];
-  const configAclFlags = parseDaoFlags(daoAclFlags);
+  const configAclFlags = parseSelectedFlags(
+    daoAccessFlags,
+    selectedDaoAclFlags,
+    "DaoRegisty"
+  );
   const managingContractAddress = await getAdapterAddress("managing");
 
   const { contract, provider, wallet } = getContract(
@@ -39,31 +47,9 @@ const submitManagingProposal = async (
     managingContractAddress
   );
 
-  let extensionAddresses = [];
-  let extensionAclFlags = [];
-  if (extensions && extensions.length > 0) {
-    for (let i in extensions) {
-      const ext = extensions[i];
-      extensionAddresses.push(await getExtensionAddress(ext.id));
-      switch (ext.id) {
-        case "bank":
-          // Convert the acl flag to the interger flag value
-          extensionAclFlags.push(
-            entryBank({ address: undefined }, parseBankFlags(ext.selectedFlags))
-              .flags
-          );
-          break;
-        default:
-          throw Error(`ACL flag not supported for extension: ${ext.name}`);
-      }
-    }
-  }
-
-  const daoFlags = entryDao(
-    adapterName,
-    { address: adapterAddress },
-    configAclFlags
-  ).flags;
+  const { extensionAddresses, extensionAclFlags } = await validateExtensions(
+    extensions
+  );
 
   return await submitSnapshotProposal(
     `Adapter: ${adapterName}`,
@@ -103,7 +89,11 @@ const submitManagingProposal = async (
         adapterOrExtensionId: sha3(adapterName),
         adapterOrExtensionAddr: adapterAddress,
         updateType: updateType,
-        flags: daoFlags,
+        flags: entryDao(
+          adapterName,
+          { address: adapterAddress },
+          configAclFlags
+        ).flags,
         keys: configKeys,
         values: configValues,
         extensionAddresses: extensionAddresses,
@@ -129,6 +119,59 @@ const processManagingProposal = async (daoProposalId) => {
   });
 
   return { daoProposalId };
+};
+
+/**
+ * Validates if the selected extensions exist in the DAO,
+ * and converts the selected ACL flags of each extension
+ * to its corresponding integer value.
+ *
+ * @param {*} extensions
+ * @returns extensionAddresses
+ * @returns extensionAclFlags
+ */
+const validateExtensions = async (extensions) => {
+  let extensionAddresses = [];
+  let extensionAclFlags = [];
+  if (!extensions || extensions.length === 0)
+    return { extensionAddresses, extensionAclFlags };
+
+  for (let i in extensions) {
+    const ext = extensions[i];
+    extensionAddresses.push(await getExtensionAddress(ext.id));
+
+    const parsedAclFlags = parseSelectedFlags(
+      ext.aclFlags,
+      ext.selectedFlags,
+      ext.name
+    );
+    switch (ext.id) {
+      case "bank":
+        extensionAclFlags.push(
+          entryBank({ address: undefined }, parsedAclFlags).flags
+        );
+        break;
+      case "nft":
+      case "erc1155-ext":
+        extensionAclFlags.push(
+          entryNft({ address: undefined }, parsedAclFlags).flags
+        );
+        break;
+      case "erc1271":
+        extensionAclFlags.push(
+          entryERC1271({ address: undefined }, parsedAclFlags).flags
+        );
+        break;
+      case "erc1271":
+        extensionAclFlags.push(
+          entryExecutor({ address: undefined }, parsedAclFlags).flags
+        );
+        break;
+      default:
+        throw Error(`ACL flag not supported for extension: ${ext.name}`);
+    }
+  }
+  return { extensionAddresses, extensionAclFlags };
 };
 
 module.exports = { submitManagingProposal, processManagingProposal };

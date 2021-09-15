@@ -27,32 +27,8 @@ const getExtensionAddress = async (extensionId) => {
   return await contract.getExtensionAddress(sha3(extensionId));
 };
 
-// TODO import from "tribute-contracts/utils/DeploymentUtil" v2.0.3
-const daoAccessFlags = [
-  "REPLACE_ADAPTER",
-  "SUBMIT_PROPOSAL",
-  "UPDATE_DELEGATE_KEY",
-  "SET_CONFIGURATION",
-  "ADD_EXTENSION",
-  "REMOVE_EXTENSION",
-  "NEW_MEMBER",
-];
-// TODO import from "tribute-contracts/utils/DeploymentUtil" v2.0.3
-const parseDaoFlags = (aclFlags) => {
-  return aclFlags
-    .map((f) => f.toUpperCase())
-    .reduce((flags, flag) => {
-      if (daoAccessFlags.includes(flag)) {
-        return { ...flags, [flag]: true };
-      }
-      throw Error(`Invalid DAO Access Flag: ${flag}`);
-    }, {});
-};
-
 module.exports = {
-  daoAccessFlags,
   getDAOConfig,
-  parseDaoFlags,
   getAddressIfDelegated,
   getMemberAddress,
   getAdapterAddress,

@@ -4,12 +4,16 @@ const {
   submitManagingProposal,
   processManagingProposal,
 } = require("../../../contracts/adapters/managing-adapter");
-const {
-  bankAclFlags,
-} = require("../../../contracts/extensions/bank-extension");
 
 const { configs } = require("../../../../cli-config");
-const { daoAccessFlags } = require("../../../contracts/core/dao-registry");
+const {
+  daoAccessFlags,
+  bankExtensionAclFlags,
+  erc721ExtensionAclFlags,
+  erc1155ExtensionAclFlags,
+  erc1271ExtensionAclFlags,
+  executorExtensionAclFlags,
+} = require("tribute-contracts/utils/aclFlags");
 const {
   success,
   notice,
@@ -18,6 +22,43 @@ const {
   error,
 } = require("../../../utils/logging");
 const { sha3 } = require("tribute-contracts/utils/ContractUtil");
+
+// TODO: ideally we should fetch only the extensions that are available in the DAO,
+// but for now it fine to declared all of them here, because the submission will fail
+// if the extension is not configured.
+const daoExtensions = [
+  {
+    name: "Bank",
+    id: "bank",
+    aclFlags: bankExtensionAclFlags,
+    selectedFlags: [],
+  },
+  {
+    name: "ERC721 - NFT",
+    id: "nft",
+    aclFlags: erc721ExtensionAclFlags,
+    selectedFlags: [],
+  },
+  {
+    name: "ERC1155 - FT & NFT",
+    id: "erc1155-ext",
+    aclFlags: erc1155ExtensionAclFlags,
+    selectedFlags: [],
+  },
+  {
+    name: "ERC1271 - Signatures",
+    id: "erc1271",
+    aclFlags: erc1271ExtensionAclFlags,
+    selectedFlags: [],
+  },
+
+  {
+    name: "Executor - Delegated Call",
+    id: "executor-ext",
+    aclFlags: executorExtensionAclFlags,
+    selectedFlags: [],
+  },
+];
 
 const managingCommands = (program) => {
   program
@@ -53,15 +94,6 @@ const managingCommands = (program) => {
         },
       ]);
 
-      const allExtensions = [
-        {
-          name: "Bank",
-          id: "bank",
-          aclFlags: bankAclFlags,
-          selectedFlags: [],
-        },
-      ];
-
       const { requiredExtensions } = await inquirer.prompt([
         {
           type: "checkbox",
@@ -69,28 +101,30 @@ const managingCommands = (program) => {
             updateType === 1 ? "Adapter" : "Extension"
           }`,
           name: "requiredExtensions",
-          choices: allExtensions,
+          choices: daoExtensions,
         },
       ]);
 
-      const extensions = await requiredExtensions
-        .flatMap((name) => allExtensions.filter((ext) => ext.name === name))
-        .reduce(async (res, extension) => {
-          const { flags } = await inquirer.prompt([
-            {
-              type: "checkbox",
-              message: `Select the **${extension.name}** ACL Flags`,
-              name: "flags",
-              choices: extension.aclFlags.map((f) =>
-                Object.assign({ name: f })
-              ),
-            },
-          ]);
-          if (flags && flags.length > 0) {
-            res.push({ ...extension, selectedFlags: flags });
-          }
-          return res;
-        }, []);
+      const selectedExtensions = requiredExtensions.flatMap((name) =>
+        daoExtensions.filter((ext) => ext.name === name)
+      );
+
+      let extensions = [];
+      for (let i in selectedExtensions) {
+        const extension = selectedExtensions[i];
+        const { flags } = await inquirer.prompt([
+          {
+            type: "checkbox",
+            message: `Select the **${extension.name}** ACL Flags`,
+            name: "flags",
+            choices: extension.aclFlags.map((f) => Object.assign({ name: f })),
+            loop: false,
+          },
+        ]);
+        if (flags && flags.length > 0) {
+          extensions.push({ ...extension, selectedFlags: flags });
+        }
+      }
 
       notice(`\n ::: Submitting Managing proposal...\n`);
       logEnvConfigs(configs);
