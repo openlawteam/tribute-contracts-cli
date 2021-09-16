@@ -10,10 +10,12 @@ const {
 const {
   offchainCommands,
 } = require("./src/interfaces/cli/commands/offchain-cmd");
-
 const {
   daoRegistryCommands,
 } = require("./src/interfaces/cli/commands/dao-registry-cmd");
+const {
+  daoArtifactsCommands,
+} = require("./src/interfaces/cli/commands/dao-artifacts-cmd");
 
 const { readFile } = require("fs/promises");
 const { Command } = require("commander");
@@ -37,6 +39,7 @@ const main = async () => {
   managingCommands(program);
   offchainCommands(program);
   daoRegistryCommands(program);
+  daoArtifactsCommands(program);
 
   program
     .parseAsync(process.argv)
