@@ -11,24 +11,23 @@ const {
 } = require("../../../utils/logging");
 const { sha3 } = require("tribute-contracts/utils/ContractUtil");
 const {
-    submitConfigurationProposal, processConfigurationProposal
+  submitConfigurationProposal,
+  processConfigurationProposal,
 } = require("../../../contracts/adapters/configuration-adapter");
 
 const configurationCommands = (program) => {
   program
     .command("config-proposal <key> <value>")
     .description("Submit a new configuration proposal.")
-        .action(async (key, value) => {
-         notice(`\n::: Processing configuration proposal...\n`);
-         return submitConfigurationProposal(
-             key,
-             value,
-             program.opts()
-         )
-             .then((res) => {
-                 success(`\n::: Processed configuration proposal\n`);
-             })
-             .catch((err) => error("Error while processing configuration proposal", err));
+    .action(async (key, value) => {
+      notice(`\n::: Processing configuration proposal...\n`);
+      return submitConfigurationProposal(key, value, program.opts())
+        .then((res) => {
+          success(`\n::: Processed configuration proposal\n`);
+        })
+        .catch((err) =>
+          error("Error while processing configuration proposal", err)
+        );
     });
   program
     .command("config-process <snapshotProposalId>")
@@ -45,9 +44,10 @@ const configurationCommands = (program) => {
         .then((res) => {
           success(`\n::: Processed Configuration proposal\n`);
         })
-        .catch((err) => error("Error while processing configuration proposal", err));
+        .catch((err) =>
+          error("Error while processing configuration proposal", err)
+        );
     });
-
 
   return program;
 };

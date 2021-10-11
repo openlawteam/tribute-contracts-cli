@@ -16,6 +16,7 @@ const {
 const {
   configurationCommands,
 } = require("./src/interfaces/cli/commands/configuration-cmd");
+const {
   daoArtifactsCommands,
 } = require("./src/interfaces/cli/commands/dao-artifacts-cmd");
 

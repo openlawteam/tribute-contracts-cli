@@ -1,6 +1,5 @@
 const { configs } = require("../../../cli-config");
 const {
-  sha3,
   UNITS,
   TOTAL,
   MEMBER_COUNT,

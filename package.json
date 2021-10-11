@@ -13,7 +13,9 @@
     "build": "npm ci && npm run compile",
     "compile": "rimraf build && mkdir -p build/contracts && cp -r node_modules/tribute-contracts/contracts/** build/contracts && hardhat compile",
     "test": "echo \"Error: no test found\"",
-    "release": "np --no-publish"
+    "release": "np --no-publish",
+    "lint:fix": "prettier --write '**/*.{js,ts,json}'",
+    "lint": "prettier --check '**/*.{js,ts,json}'"
   },
   "author": "dev@openlaw.io",
   "license": "MIT",
@@ -26,20 +28,35 @@
   },
   "dependencies": {
     "@openlaw/snapshot-js-erc712": "1.3.0",
-    "tribute-contracts": "2.2.1",
     "chalk": "^4.1.2",
     "commander": "^8.1.0",
     "dotenv": "^10.0.0",
     "eth-sig-util": "3.0.1",
     "ethereumjs-util": "7.1.0",
     "ethers": "5.4.5",
+    "hardhat": "^2.6.2",
     "inquirer": "^8.1.2",
+    "tribute-contracts": "2.2.1",
     "truffle": "5.4.6",
-    "web3": "1.4.0",
-    "hardhat": "^2.6.2"
+    "web3": "1.4.0"
   },
   "devDependencies": {
     "np": "^7.5.0",
+    "prettier": "^2.4.1",
     "rimraf": "^3.0.2"
+  },
+  "prettier": {
+    "overrides": [
+      {
+        "files": [
+          "{src,test}/**/*.{js,ts,json}"
+        ],
+        "options": {
+          "singleQuote": false,
+          "bracketSpacing": true,
+          "tabWidth": 2
+        }
+      }
+    ]
   }
 }

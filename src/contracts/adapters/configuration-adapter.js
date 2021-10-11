@@ -1,19 +1,11 @@
 const Web3 = require("web3");
 const { ethers } = require("ethers");
-const toBytes32 = ethers.utils.formatBytes32String;
 const { configs } = require("../../../cli-config");
 const { sha3, toBN } = require("tribute-contracts/utils/ContractUtil");
 const { prepareVoteProposalData } = require("@openlaw/snapshot-js-erc712");
-const { entryDao } = require("tribute-contracts/utils/DeploymentUtil");
 const { getContract } = require("../../utils/contract");
 const { submitSnapshotProposal } = require("../../services/snapshot-service");
-const { parseDaoFlags } = require("../core/dao-registry");
-const {   success,
-  notice,
-  info,
-  logEnvConfigs,
-  error,
-  warn } = require("../../utils/logging");
+const { warn } = require("../../utils/logging");
 
 const submitConfigurationProposal = async (key, value, opts) => {
   const { contract, provider, wallet } = getContract(
@@ -49,16 +41,15 @@ const submitConfigurationProposal = async (key, value, opts) => {
     if (opts.debug) warn(`Encoded DAO message: ${encodedData}\n`);
 
     await contract.submitProposal(
-        configs.contracts.DaoRegistry,
-        daoProposalId,
-        [sha3(key)],
-        [Number(value)],
-        encodedData ? encodedData : ethers.utils.toUtf8Bytes(""),
-        { from: wallet.address }
+      configs.contracts.DaoRegistry,
+      daoProposalId,
+      [sha3(key)],
+      [toBN(value)],
+      encodedData ? encodedData : ethers.utils.toUtf8Bytes(""),
+      { from: wallet.address }
     );
     return { daoProposalId, snapshotProposalId };
   });
-    
 };
 
 const processConfigurationProposal = async (daoProposalId) => {
@@ -74,5 +65,4 @@ const processConfigurationProposal = async (daoProposalId) => {
   return { daoProposalId };
 };
 
-
-module.exports = { submitConfigurationProposal };
+module.exports = { processConfigurationProposal, submitConfigurationProposal };
