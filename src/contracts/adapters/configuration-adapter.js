@@ -2,7 +2,7 @@ const Web3 = require("web3");
 const { ethers } = require("ethers");
 const toBytes32 = ethers.utils.formatBytes32String;
 const { configs } = require("../../../cli-config");
-const { sha3, toBN, proposalIdGenerator } = require("tribute-contracts/utils/ContractUtil");
+const { sha3, toBN } = require("tribute-contracts/utils/ContractUtil");
 const { prepareVoteProposalData } = require("@openlaw/snapshot-js-erc712");
 const { entryDao } = require("tribute-contracts/utils/DeploymentUtil");
 const { getContract } = require("../../utils/contract");
@@ -13,7 +13,7 @@ const {   success,
   info,
   logEnvConfigs,
   error,
-          warn } = require("../../utils/logging");
+  warn } = require("../../utils/logging");
 
 const submitConfigurationProposal = async (key, value, opts) => {
   const { contract, provider, wallet } = getContract(
