@@ -1,13 +1,12 @@
+const hre = require("hardhat");
 const { ethers } = require("ethers");
-const fs = require("fs");
-const path = require("path");
 const { configs } = require("../../cli-config");
 const { getNetworkDetails } = require("tribute-contracts/utils/DeploymentUtil");
 
 const openWallet = (provider) => {
   // The Wallet class inherits Signer and can sign transactions
   // and messages using a private key as a standard Externally Owned Account (EOA).
-  const wallet = ethers.Wallet.fromMnemonic(configs.truffleMnemonic);
+  const wallet = ethers.Wallet.fromMnemonic(configs.mnemonic);
   return wallet.connect(provider);
 };
 
@@ -17,10 +16,18 @@ const getProvider = (network) => {
 
   switch (network) {
     case "rinkeby":
+      return ethers.getDefaultProvider(network, {
+        url: configs.ethBlockchainApi,
+        network: {
+          chainId: 4,
+        },
+      });
     case "mainnet":
       return ethers.getDefaultProvider(network, {
-        infura: configs.infuraApiKey,
-        alchemy: configs.alchemyApiKey,
+        url: configs.ethBlockchainApi,
+        network: {
+          chainId: 1,
+        },
       });
 
     case "ganache":
@@ -37,13 +44,8 @@ const getProvider = (network) => {
 };
 
 const getABI = (contractName) => {
-  const contract = JSON.parse(
-    fs.readFileSync(
-      path.resolve(`build/contracts/${contractName}.json`),
-      "utf8"
-    )
-  );
-  return contract.abi;
+  const artifact = hre.artifacts.readArtifactSync(contractName);
+  return artifact.abi;
 };
 
 const attachContract = (address, abi, wallet) => {

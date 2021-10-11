@@ -86,7 +86,7 @@ const signAndSendProposal = async (proposal, provider, wallet) => {
   // 2. Sign data
   const signature = SignerV4(wallet.privateKey)(
     message,
-    configs.contracts.DaoRegistry,
+    configs.dao,
     actionId,
     chainId
   );
@@ -100,7 +100,7 @@ const signAndSendProposal = async (proposal, provider, wallet) => {
     {
       actionId: actionId,
       chainId: chainId,
-      verifyingContract: configs.contracts.DaoRegistry,
+      verifyingContract: configs.dao,
       message: prepareProposalMessage(message),
     }
   );
@@ -116,7 +116,6 @@ const signAndSendProposal = async (proposal, provider, wallet) => {
 const signAndSendVote = async (vote, provider, wallet) => {
   const { partialVoteData, type, space, actionId } = vote;
 
-  // When using ganache, the getNetwork call always returns UNKNOWN, so we ignore that.
   const { chainId } = await provider.getNetwork();
 
   const { daoProposalId, snapshotProposalId, choice } = partialVoteData;
@@ -148,7 +147,7 @@ const signAndSendVote = async (vote, provider, wallet) => {
   // 2. Sign data
   const signature = SignerV4(wallet.privateKey)(
     { ...message, type },
-    configs.contracts.DaoRegistry,
+    configs.dao,
     actionId,
     chainId
   );
@@ -165,7 +164,7 @@ const signAndSendVote = async (vote, provider, wallet) => {
     {
       actionId: actionId,
       chainId: chainId,
-      verifyingContract: configs.contracts.DaoRegistry,
+      verifyingContract: configs.dao,
       message: prepareVoteMessage(message),
     }
   );
@@ -197,7 +196,7 @@ const submitSnapshotProposal = (
       space: configs.space,
       actionId,
       network: configs.network,
-      dao: configs.contracts.DaoRegistry,
+      dao: configs.dao,
     },
     provider,
     wallet

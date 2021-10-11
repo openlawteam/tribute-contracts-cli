@@ -6,7 +6,14 @@ const {
 } = require("../../../contracts/adapters/managing-adapter");
 
 const { configs } = require("../../../../cli-config");
-const { daoAccessFlags } = require("../../../contracts/core/dao-registry");
+const {
+  daoAccessFlags,
+  bankExtensionAclFlags,
+  erc721ExtensionAclFlags,
+  erc1155ExtensionAclFlags,
+  erc1271ExtensionAclFlags,
+  executorExtensionAclFlags,
+} = require("tribute-contracts/utils/aclFlags");
 const {
   success,
   notice,
@@ -16,41 +23,137 @@ const {
 } = require("../../../utils/logging");
 const { sha3 } = require("tribute-contracts/utils/ContractUtil");
 
+// TODO: ideally we should fetch only the extensions that are available in the DAO,
+// but for now it fine to declared all of them here, because the submission will fail
+// if the extension is not configured.
+const daoExtensions = [
+  {
+    name: "Bank",
+    id: "bank",
+    aclFlags: bankExtensionAclFlags,
+    selectedFlags: [],
+  },
+  {
+    name: "ERC721 - NFT",
+    id: "nft",
+    aclFlags: erc721ExtensionAclFlags,
+    selectedFlags: [],
+  },
+  {
+    name: "ERC1155 - FT & NFT",
+    id: "erc1155-ext",
+    aclFlags: erc1155ExtensionAclFlags,
+    selectedFlags: [],
+  },
+  {
+    name: "ERC1271 - Signatures",
+    id: "erc1271",
+    aclFlags: erc1271ExtensionAclFlags,
+    selectedFlags: [],
+  },
+
+  {
+    name: "Executor - Delegated Call",
+    id: "executor-ext",
+    aclFlags: executorExtensionAclFlags,
+    selectedFlags: [],
+  },
+];
+
 const managingCommands = (program) => {
   program
-    .command(
-      "managing-proposal <adapterId> <adapterAddress> [keys] [values] [data]"
-    )
+    .command("managing-proposal <adapterId> <adapterAddress> [keys] [values]")
     .description("Submit a new managing proposal.")
-    .action(async (adapterName, adapterAddress, keys, values, data) => {
-      await inquirer
-        .prompt([
+    .action(async (adapterName, adapterAddress, keys, values) => {
+      const { updateType } = await inquirer.prompt([
+        {
+          type: "list",
+          message: "Which type of contract do you want to update?",
+          name: "updateType",
+          choices: [
+            {
+              name: "Adapter",
+              value: 1,
+              description: "If you want to Add/Remove/Update adapters",
+            },
+            {
+              name: "Extension",
+              value: 2,
+              description: "If want to Add/Remove/Update extensions",
+            },
+          ],
+        },
+      ]);
+
+      const { daoAclFlags } = await inquirer.prompt([
+        {
+          type: "checkbox",
+          message: "Select the **DAO** ACL Flags",
+          name: "daoAclFlags",
+          choices: daoAccessFlags.map((f) => Object.assign({ name: f })),
+        },
+      ]);
+
+      const { requiredExtensions } = await inquirer.prompt([
+        {
+          type: "checkbox",
+          message: `Select the extensions that will be used by the ${
+            updateType === 1 ? "Adapter" : "Extension"
+          }`,
+          name: "requiredExtensions",
+          choices: daoExtensions,
+        },
+      ]);
+
+      const selectedExtensions = requiredExtensions.flatMap((name) =>
+        daoExtensions.filter((ext) => ext.name === name)
+      );
+
+      let extensions = [];
+      for (let i in selectedExtensions) {
+        const extension = selectedExtensions[i];
+        const { flags } = await inquirer.prompt([
           {
             type: "checkbox",
-            message: "Select the ACL Flags or hit ENTER to skip",
-            name: "aclFlags",
-            choices: daoAccessFlags.map((f) => Object.assign({ name: f })),
+            message: `Select the **${extension.name}** ACL Flags`,
+            name: "flags",
+            choices: extension.aclFlags.map((f) => Object.assign({ name: f })),
+            loop: false,
           },
-        ])
-        .then((anwsers) => {
-          notice(`\n ::: Submitting Managing proposal...\n`);
-          logEnvConfigs(configs, configs.contracts.ManagingContract);
-          info(`Adapter:\t\t${adapterName} @ ${adapterAddress}`);
-          info(`AccessFlags:\t\t${JSON.stringify(anwsers.aclFlags)}`);
-          info(`Keys:\t\t\t${keys ? keys : "n/a"}`);
-          info(`Values:\t\t\t${values ? values : "n/a"}`);
-          info(`Data:\t\t\t${data ? data : "n/a"}\n`);
+        ]);
+        if (flags && flags.length > 0) {
+          extensions.push({ ...extension, selectedFlags: flags });
+        }
+      }
 
-          return submitManagingProposal(
-            adapterName,
-            adapterAddress,
-            anwsers.aclFlags,
-            keys,
-            values,
-            data,
-            program.opts()
-          );
-        })
+      notice(`\n ::: Submitting Managing proposal...\n`);
+      logEnvConfigs(configs);
+      info(`Adapter:\t\t${adapterName} @ ${adapterAddress}`);
+      info(`AccessFlags:\t\t${JSON.stringify(daoAclFlags)}`);
+      info(`Keys:\t\t\t${keys ? keys : "n/a"}`);
+      info(`Values:\t\t\t${values ? values : "n/a"}`);
+      info(
+        `Extensions:\t\t${
+          extensions
+            ? JSON.stringify(
+                extensions.map((e) =>
+                  Object.assign({ [e.name]: e.selectedFlags })
+                )
+              )
+            : "n/a"
+        }\n`
+      );
+
+      return submitManagingProposal(
+        updateType,
+        adapterName,
+        adapterAddress,
+        daoAclFlags,
+        extensions,
+        keys,
+        values,
+        program.opts()
+      )
         .then((data) => {
           success(`New Snapshot Proposal Id: ${data.snapshotProposalId}\n`);
           notice(`::: Managing proposal submitted!\n`);
@@ -65,7 +168,7 @@ const managingCommands = (program) => {
       const daoProposalId = sha3(snapshotProposalId);
 
       notice(`\n::: Processing Managing proposal...\n`);
-      logEnvConfigs(configs, configs.contracts.ManagingContract);
+      logEnvConfigs(configs);
       info(`Snapshot Proposal Id:\t${snapshotProposalId}`);
       info(`DAO Proposal Id:\t${daoProposalId}`);
 

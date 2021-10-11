@@ -1,0 +1,49 @@
+require("dotenv").config({ path: ".env" });
+
+const { configs } = require("./cli-config");
+
+module.exports = {
+  defaultNetwork: "ganache",
+  networks: {
+    ganache: {
+      url: "http://127.0.0.1:7545",
+      network_id: "1337",
+      accounts: {
+        count: 10,
+        initialIndex: 0,
+        mnemonic: configs.mnemonic,
+        path: "m/44'/60'/0'/0",
+      },
+    },
+    rinkeby: {
+      url: configs.ethBlockchainApi,
+      network_id: 4,
+      skipDryRun: true,
+      networkCheckTimeout: 10000,
+      deploymentPollingInterval: 10000,
+    },
+    mainnet: {
+      url: configs.ethBlockchainApi,
+      network_id: 1,
+      skipDryRun: true,
+    },
+  },
+  solidity: {
+    version: "0.8.0",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200,
+      },
+    },
+  },
+  paths: {
+    tests: "./test",
+    sources: "./build/contracts",
+    cache: "./build/cache",
+    artifacts: "./build/artifacts",
+  },
+  mocha: {
+    timeout: 20000,
+  },
+};
