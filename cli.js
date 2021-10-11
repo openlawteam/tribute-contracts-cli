@@ -14,6 +14,8 @@ const {
   daoRegistryCommands,
 } = require("./src/interfaces/cli/commands/dao-registry-cmd");
 const {
+  configurationCommands,
+} = require("./src/interfaces/cli/commands/configuration-cmd");
   daoArtifactsCommands,
 } = require("./src/interfaces/cli/commands/dao-artifacts-cmd");
 
@@ -39,6 +41,7 @@ const main = async () => {
   managingCommands(program);
   offchainCommands(program);
   daoRegistryCommands(program);
+  configurationCommands(program);
   daoArtifactsCommands(program);
 
   program
