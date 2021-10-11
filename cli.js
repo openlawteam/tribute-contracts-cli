@@ -14,6 +14,9 @@ const {
 const {
   daoRegistryCommands,
 } = require("./src/interfaces/cli/commands/dao-registry-cmd");
+const {
+  configurationCommands,
+} = require("./src/interfaces/cli/commands/configuration-cmd");
 
 const { readFile } = require("fs/promises");
 const { Command } = require("commander");
@@ -37,7 +40,8 @@ const main = async () => {
   managingCommands(program);
   offchainCommands(program);
   daoRegistryCommands(program);
-
+  configurationCommands(program);
+  
   program
     .parseAsync(process.argv)
     .then(() => process.exit(0))
