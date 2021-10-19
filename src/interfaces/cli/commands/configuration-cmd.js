@@ -1,7 +1,4 @@
-const inquirer = require("inquirer");
-
 const { configs } = require("../../../../cli-config");
-const { daoAccessFlags } = require("../../../contracts/core/dao-registry");
 const {
   success,
   notice,
@@ -18,12 +15,13 @@ const {
 const configurationCommands = (program) => {
   program
     .command("config-proposal <key> <value>")
-    .description("Submit a new configuration proposal.")
+    .description("Submit a new Configuration proposal.")
     .action(async (key, value) => {
-      notice(`\n::: Processing configuration proposal...\n`);
+      notice(`\n::: Submitting Configuration proposal...\n`);
       return submitConfigurationProposal(key, value, program.opts())
         .then((res) => {
-          success(`\n::: Processed configuration proposal\n`);
+          success(`New Snapshot Proposal Id: ${res.snapshotProposalId}\n`);
+          success(`\n::: Configuration proposal submitted!\n`);
         })
         .catch((err) =>
           error("Error while processing configuration proposal", err)
@@ -31,7 +29,7 @@ const configurationCommands = (program) => {
     });
   program
     .command("config-process <snapshotProposalId>")
-    .description("Process an existing configurationproposal.")
+    .description("Process an existing configuration proposal.")
     .action(async (snapshotProposalId) => {
       const daoProposalId = sha3(snapshotProposalId);
 
