@@ -17,10 +17,11 @@ const configurationCommands = (program) => {
     .command("config-proposal <key> <value>")
     .description("Submit a new configuration proposal.")
     .action(async (key, value) => {
-      notice(`\n::: Processing configuration proposal...\n`);
+      notice(`\n::: Submitting configuration proposal...\n`);
       return submitConfigurationProposal(key, value, program.opts())
         .then((res) => {
-          success(`\n::: Processed configuration proposal\n`);
+          success(`New Snapshot Proposal Id: ${res.snapshotProposalId}\n`);
+          success(`\n::: Configuration proposal submitted!\n`);
         })
         .catch((err) =>
           error("Error while processing configuration proposal", err)
