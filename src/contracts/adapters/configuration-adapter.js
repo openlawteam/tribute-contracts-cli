@@ -6,16 +6,20 @@ const { prepareVoteProposalData } = require("@openlaw/snapshot-js-erc712");
 const { getContract } = require("../../utils/contract");
 const { submitSnapshotProposal } = require("../../services/snapshot-service");
 const { warn } = require("../../utils/logging");
+const { getAdapterAddress } = require("../core/dao-registry");
 
 const submitConfigurationProposal = async (key, value, opts) => {
+  const configurationContractAddress = await getAdapterAddress("configuration");
+
   const { contract, provider, wallet } = getContract(
     "ConfigurationContract",
-    configs.contracts.ConfigurationContract
+    configurationContractAddress
   );
+
   return await submitSnapshotProposal(
     `Key: ${key} -> ${value}`,
     "Creates/Update configuration",
-    configs.contracts.ConfigurationContract,
+    configurationContractAddress,
     provider,
     wallet
   ).then(async (res) => {
@@ -31,6 +35,7 @@ const submitConfigurationProposal = async (key, value, opts) => {
         snapshot: data.payload.snapshot.toString(),
         start: data.payload.start,
       },
+      submitter: wallet.address,
       sig: res.sig,
       space: data.space,
       timestamp: parseInt(data.timestamp),
@@ -41,10 +46,10 @@ const submitConfigurationProposal = async (key, value, opts) => {
     if (opts.debug) warn(`Encoded DAO message: ${encodedData}\n`);
 
     await contract.submitProposal(
-      configs.contracts.DaoRegistry,
+      configs.dao,
       daoProposalId,
       [sha3(key)],
-      [toBN(value)],
+      [value],
       encodedData ? encodedData : ethers.utils.toUtf8Bytes(""),
       { from: wallet.address }
     );
@@ -53,12 +58,14 @@ const submitConfigurationProposal = async (key, value, opts) => {
 };
 
 const processConfigurationProposal = async (daoProposalId) => {
+  const configurationContractAddress = await getAdapterAddress("configuration");
+
   const { contract, wallet } = getContract(
     "ConfigurationContract",
-    configs.contracts.ConfigurationContract
+    configurationContractAddress
   );
 
-  await contract.processProposal(configs.contracts.DaoRegistry, daoProposalId, {
+  await contract.processProposal(configs.dao, daoProposalId, {
     from: wallet.address,
   });
 

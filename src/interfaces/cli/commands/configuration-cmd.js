@@ -34,7 +34,7 @@ const configurationCommands = (program) => {
       const daoProposalId = sha3(snapshotProposalId);
 
       notice(`\n::: Processing Configuration proposal...\n`);
-      logEnvConfigs(configs, configs.contracts.ConfigurationContract);
+      logEnvConfigs(configs);
       info(`Snapshot Proposal Id:\t${snapshotProposalId}`);
       info(`DAO Proposal Id:\t${daoProposalId}`);
 
