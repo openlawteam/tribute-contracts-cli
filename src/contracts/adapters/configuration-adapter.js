@@ -7,13 +7,13 @@ const { getContract } = require("../../utils/contract");
 const { submitSnapshotProposal } = require("../../services/snapshot-service");
 const { warn } = require("../../utils/logging");
 
-const submitConfigurationProposal = async (key, value, opts) => {
+const submitConfigurationProposal = async (keys, values, addresses, opts) => {
   const { contract, provider, wallet } = getContract(
     "ConfigurationContract",
     configs.contracts.ConfigurationContract
   );
   return await submitSnapshotProposal(
-    `Key: ${key} -> ${value}`,
+    `Keys: ${keys} -> ${values} | ${addresses} `,
     "Creates/Update configuration",
     configs.contracts.ConfigurationContract,
     provider,
@@ -43,8 +43,9 @@ const submitConfigurationProposal = async (key, value, opts) => {
     await contract.submitProposal(
       configs.contracts.DaoRegistry,
       daoProposalId,
-      [sha3(key)],
-      [Number(value)],
+      keys.map((k) => sha3(k)),
+      values.map((v) => Number(v)),
+      addresses.map((a) => ethers.utils.getAddress(a)),
       encodedData ? encodedData : ethers.utils.toUtf8Bytes(""),
       { from: wallet.address }
     );
