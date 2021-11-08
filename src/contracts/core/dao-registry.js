@@ -7,6 +7,11 @@ const getDAOConfig = async (configKey) => {
   return await contract.getConfiguration(sha3(configKey));
 };
 
+const getDAOConfigAddress = async (configKey) => {
+  const { contract } = getContract("DaoRegistry", configs.dao);
+  return await contract.getAddressConfiguration(sha3(configKey));
+};
+
 const getAddressIfDelegated = async (memberAddress) => {
   const { contract } = getContract("DaoRegistry", configs.dao);
   return await contract.getAddressIfDelegated(memberAddress);
@@ -29,6 +34,7 @@ const getExtensionAddress = async (extensionId) => {
 
 module.exports = {
   getDAOConfig,
+  getDAOConfigAddress,
   getAddressIfDelegated,
   getMemberAddress,
   getAdapterAddress,

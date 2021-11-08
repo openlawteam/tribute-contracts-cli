@@ -3,6 +3,7 @@ const {
   getAdapterAddress,
   getExtensionAddress,
   getDAOConfig,
+  getDAOConfigAddress,
 } = require("../../../contracts/core/dao-registry");
 const {
   success,
@@ -58,6 +59,21 @@ const daoRegistryCommands = (program) => {
           success(`Value: \t\t\t${data}\n`);
         })
         .catch((err) => error("Error while getting the config value", err));
+    });
+
+  program
+    .command("get-config-addr <configName>")
+    .description("Gets the configuration address value from the DAO.")
+    .action((configName) => {
+      notice(`\n ::: Get configuration address...\n`);
+      logEnvConfigs(configs);
+      info(`Config:\t\t\t${configName}`);
+
+      return getDAOConfigAddress(configName)
+        .then((data) => {
+          success(`Address: \t\t${data}\n`);
+        })
+        .catch((err) => error("Error while getting the config address", err));
     });
 
   return program;
