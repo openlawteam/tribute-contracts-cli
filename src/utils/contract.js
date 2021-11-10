@@ -17,11 +17,20 @@ const getProvider = (network) => {
 
   switch (network) {
     case "rinkeby":
-    case "mainnet":
-      return ethers.getDefaultProvider(network, {
-        infura: configs.infuraApiKey,
-        alchemy: configs.alchemyApiKey,
-      });
+    case "mainnet": {
+      if (configs.alchemyApiKey)
+        return new ethers.providers.AlchemyProvider(
+          network,
+          configs.alchemyApiKey
+        );
+      if (configs.infuraApiKey)
+        return new ethers.providers.InfuraProvider(
+          network,
+          configs.infuraApiKey
+        );
+
+      return ethers.getDefaultProvider(network);
+    }
 
     case "ganache":
     default:
