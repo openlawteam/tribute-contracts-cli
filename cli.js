@@ -10,7 +10,9 @@ const {
 const {
   offchainCommands,
 } = require("./src/interfaces/cli/commands/offchain-cmd");
-
+const {
+  configurationCommands,
+} = require("./src/interfaces/cli/commands/configuration-cmd");
 const {
   daoRegistryCommands,
 } = require("./src/interfaces/cli/commands/dao-registry-cmd");
@@ -36,6 +38,7 @@ const main = async () => {
 
   managingCommands(program);
   offchainCommands(program);
+  configurationCommands(program);
   daoRegistryCommands(program);
 
   program

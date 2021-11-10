@@ -32,11 +32,11 @@ const managingCommands = (program) => {
             choices: daoAccessFlags.map((f) => Object.assign({ name: f })),
           },
         ])
-        .then((anwsers) => {
+        .then((answers) => {
           notice(`\n ::: Submitting Managing proposal...\n`);
           logEnvConfigs(configs, configs.contracts.ManagingContract);
           info(`Adapter:\t\t${adapterName} @ ${adapterAddress}`);
-          info(`AccessFlags:\t\t${JSON.stringify(anwsers.aclFlags)}`);
+          info(`AccessFlags:\t\t${JSON.stringify(answers.aclFlags)}`);
           info(`Keys:\t\t\t${keys ? keys : "n/a"}`);
           info(`Values:\t\t\t${values ? values : "n/a"}`);
           info(`Data:\t\t\t${data ? data : "n/a"}\n`);
@@ -44,7 +44,7 @@ const managingCommands = (program) => {
           return submitManagingProposal(
             adapterName,
             adapterAddress,
-            anwsers.aclFlags,
+            answers.aclFlags,
             keys,
             values,
             data,

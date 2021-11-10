@@ -1,46 +1,27 @@
 const Web3 = require("web3");
 const { ethers } = require("ethers");
-const toBytes32 = ethers.utils.formatBytes32String;
 const { configs } = require("../../../cli-config");
-
-const { sha3 } = require("tribute-contracts/utils/ContractUtil");
+const { sha3, toBN } = require("tribute-contracts/utils/ContractUtil");
 const { prepareVoteProposalData } = require("@openlaw/snapshot-js-erc712");
-const { entryDao } = require("tribute-contracts/utils/DeploymentUtil");
 const { getContract } = require("../../utils/contract");
 const { submitSnapshotProposal } = require("../../services/snapshot-service");
-const { parseDaoFlags } = require("../core/dao-registry");
-const { warn, error } = require("../../utils/logging");
+const { warn } = require("../../utils/logging");
 
-const submitManagingProposal = async (
-  adapterName,
-  adapterAddress,
-  aclFlags,
-  keys,
-  values,
-  data,
-  opts
-) => {
-  const configKeys = keys ? keys.split(",").map((k) => toBytes32(k)) : [];
-  const configValues = values ? values.split(",").map((v) => v) : [];
-  const configAclFlags = parseDaoFlags(aclFlags);
-
+const submitConfigurationProposal = async ({ configurations, opts }) => {
   const { contract, provider, wallet } = getContract(
-    "ManagingContract",
-    configs.contracts.ManagingContract
+    "ConfigurationContract",
+    configs.contracts.ConfigurationContract
   );
-
   return await submitSnapshotProposal(
-    `Adapter: ${adapterName}`,
-    "Create/Update adapter",
-    configs.contracts.ManagingContract,
+    `Keys: ${configurations.key}: ${configurations.value}`,
+    "Creates/Update configuration",
+    configs.contracts.ConfigurationContract,
     provider,
     wallet
   ).then(async (res) => {
     const data = res.data;
     const snapshotProposalId = res.uniqueId;
     const daoProposalId = sha3(snapshotProposalId);
-
-    warn(`Snapshot Message: ${JSON.stringify(data)}\n`);
     const message = {
       payload: {
         body: data.payload.body,
@@ -54,10 +35,10 @@ const submitManagingProposal = async (
       space: data.space,
       timestamp: parseInt(data.timestamp),
     };
-    warn(`DAO Message: ${JSON.stringify(message)}\n`);
+    if (opts.debug) warn(`DAO Message: ${JSON.stringify(message)}\n`);
 
     const encodedData = prepareVoteProposalData(message, new Web3(""));
-    warn(`Encoded DAO message: ${encodedData}\n`);
+    if (opts.debug) warn(`Encoded DAO message: ${encodedData}\n`);
 
     const { contract: offchainContract } = getContract(
       "OffchainVotingContract",
@@ -66,7 +47,7 @@ const submitManagingProposal = async (
 
     const sender = await offchainContract.getSenderAddress(
       configs.contracts.DaoRegistry,
-      configs.contracts.ManagingContract,
+      configs.contracts.ConfigurationContract,
       encodedData,
       wallet.address,
       { from: wallet.address }
@@ -81,20 +62,8 @@ const submitManagingProposal = async (
     await contract.submitProposal(
       configs.contracts.DaoRegistry,
       daoProposalId,
-      {
-        adapterOrExtensionId: sha3(adapterName),
-        adapterOrExtensionAddr: adapterAddress,
-        flags: entryDao(
-          adapterName,
-          { address: adapterAddress },
-          configAclFlags
-        ).flags,
-        updateType: 1,
-        keys: configKeys,
-        values: configValues,
-        extensionAddresses: [],
-        extensionAclFlags: [],
-      },
+      [sha3(configurations.key)],
+      [configurations.value],
       encodedData ? encodedData : ethers.utils.toUtf8Bytes(""),
       { from: wallet.address }
     );
@@ -102,10 +71,10 @@ const submitManagingProposal = async (
   });
 };
 
-const processManagingProposal = async (daoProposalId) => {
+const processConfigurationProposal = async (daoProposalId) => {
   const { contract, wallet } = getContract(
-    "ManagingContract",
-    configs.contracts.ManagingContract
+    "ConfigurationContract",
+    configs.contracts.ConfigurationContract
   );
 
   await contract.processProposal(configs.contracts.DaoRegistry, daoProposalId, {
@@ -115,4 +84,4 @@ const processManagingProposal = async (daoProposalId) => {
   return { daoProposalId };
 };
 
-module.exports = { submitManagingProposal, processManagingProposal };
+module.exports = { submitConfigurationProposal, processConfigurationProposal };
