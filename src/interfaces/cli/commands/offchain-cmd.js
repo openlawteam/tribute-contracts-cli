@@ -5,6 +5,7 @@ const { configs } = require("../../../../cli-config");
 const {
   submitOffchainResult,
   newOffchainVote,
+  getVoteState,
 } = require("../../../contracts/adapters/offchain-voting-adapter");
 const {
   logEnvConfigs,
@@ -17,9 +18,7 @@ const {
 const offchainCommands = (program) => {
   program
     .command("offchain-vote <snapshotProposalId> [data]")
-    .description(
-      "Submits a vote to Snapshot Hub."
-    )
+    .description("Submits a vote to Snapshot Hub.")
     .action(async (snapshotProposalId, data) => {
       await inquirer
         .prompt([
@@ -57,9 +56,7 @@ const offchainCommands = (program) => {
 
   program
     .command("offchain-result <snapshotProposalId>")
-    .description(
-      "Submits the results of the voting to the DAO."
-    )
+    .description("Submits the results of the voting to the DAO.")
     .action((snapshotProposalId) => {
       const daoProposalId = sha3(snapshotProposalId);
 
@@ -76,6 +73,23 @@ const offchainCommands = (program) => {
           success(`::: Offchain vote results submitted to the DAO`);
         })
         .catch((err) => error("Error while submitting vote results", err));
+    });
+
+  program
+    .command("offchain-vote-state <snapshotProposalId>")
+    .description("Gets the vote state of the proposal.")
+    .action((snapshotProposalId) => {
+      const daoProposalId = sha3(snapshotProposalId);
+
+      notice(`\n ::: Getting offchain vote state...\n`);
+      logEnvConfigs(configs, configs.contracts.OffchainVotingContract);
+
+      info(`Snapshot Proposal Id:\t${snapshotProposalId}`);
+      info(`DAO Proposal Id:\t${daoProposalId}`);
+
+      return getVoteState({ daoProposalId })
+        .then((voteState) => notice(`Vote state: ${voteState}\n`))
+        .catch((err) => error("Error while getting vote state", err));
     });
 
   return program;

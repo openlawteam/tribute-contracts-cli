@@ -11,7 +11,7 @@
   },
   "scripts": {
     "compile": "truffle compile",
-    "test": "echo \"Error: no test found\"",
+    "build": "npm install && rimraf build/ && npm run compile",
     "release": "np"
   },
   "author": "dev@openlaw.io",
@@ -25,11 +25,12 @@
     "ethereumjs-util": "7.1.0",
     "ethers": "5.4.5",
     "inquirer": "^8.1.2",
-    "tribute-contracts": "^1.0.3",
+    "tribute-contracts": "^1.0.1",
     "truffle": "5.4.6",
     "web3": "^1.4.0"
   },
   "devDependencies": {
-    "np": "^7.5.0"
+    "np": "^7.5.0",
+    "rimraf": "^3.0.2"
   }
 }

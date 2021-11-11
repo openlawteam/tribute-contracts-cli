@@ -82,19 +82,16 @@ const submitManagingProposal = async (
       configs.contracts.DaoRegistry,
       daoProposalId,
       {
-        adapterOrExtensionId: sha3(adapterName),
-        adapterOrExtensionAddr: adapterAddress,
+        adapterId: sha3(adapterName),
+        adapterAddress: adapterAddress,
         flags: entryDao(
           adapterName,
           { address: adapterAddress },
           configAclFlags
         ).flags,
-        updateType: 1,
-        keys: configKeys,
-        values: configValues,
-        extensionAddresses: [],
-        extensionAclFlags: [],
       },
+      configKeys,
+      configValues,
       encodedData ? encodedData : ethers.utils.toUtf8Bytes(""),
       { from: wallet.address }
     );

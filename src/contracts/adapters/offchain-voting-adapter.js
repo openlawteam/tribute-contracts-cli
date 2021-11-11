@@ -1,6 +1,5 @@
 const { configs } = require("../../../cli-config");
 const {
-  sha3,
   UNITS,
   TOTAL,
   MEMBER_COUNT,
@@ -31,6 +30,15 @@ const BadNodeError = {
   2: "INVALID_CHOICE",
   3: "AFTER_VOTING_PERIOD",
   4: "BAD_SIGNATURE",
+};
+
+const VotingState = {
+  0: "NOT_STARTED",
+  1: "TIE",
+  2: "PASS",
+  3: "NOT_PASS",
+  4: "IN_PROGRESS",
+  5: "GRACE_PERIOD",
 };
 
 const newOffchainVote = async (
@@ -219,4 +227,19 @@ const submitOffchainResult = async (snapshotProposalId, daoProposalId) => {
   };
 };
 
-module.exports = { newOffchainVote, submitOffchainResult };
+const getVoteState = async ({ daoProposalId }) => {
+  const { contract: offchainContract, wallet } = getContract(
+    "OffchainVotingContract",
+    configs.contracts.OffchainVotingContract
+  );
+
+  const votingStateId = await offchainContract.voteResult(
+    configs.contracts.DaoRegistry,
+    daoProposalId,
+    { from: wallet.address }
+  );
+  if (configs.debug) warn(`\nVote state id: ${votingStateId}`);
+  return VotingState[votingStateId];
+};
+
+module.exports = { newOffchainVote, submitOffchainResult, getVoteState };
