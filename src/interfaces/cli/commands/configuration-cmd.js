@@ -20,15 +20,38 @@ const {
 
 const configurationCommands = (program) => {
   program
-    .command("config-proposal <key> <value>")
+    .command("config-proposal")
     .description("Submit a new configuration proposal.")
-    .action(async (key, value) => {
+    .action(async () => {
       notice(`\n::: Submitting configuration proposal...\n`);
+      await collectConfigs()
+        .then((inputs) => {
+          if (process.env.DEBUG) console.log(inputs);
+          const configs = [];
+          Array.from(inputs).forEach((i) => {
+            if (i.configType === "Numeric") {
+              configs.push({
+                key: sha3(i.configKey),
+                configType: 0, // Numeric
+                numericValue: i.configValue,
+                addressValue: ZERO_ADDRESS,
+              });
+            } else if (i.configType === "Address") {
+              configs.push({
+                key: sha3(i.configKey),
+                configType: 1, // Address
+                numericValue: 0,
+                addressValue: ethers.utils.getAddress(i.configValue),
+              });
+            }
+          });
+          if (process.env.DEBUG) console.log(configs);
 
-      return submitConfigurationProposal({
-        configurations: { key, value },
-        opts: program.opts(),
-      })
+          return submitConfigurationProposal({
+            configurations: configs,
+            opts: program.opts(),
+          });
+        })
         .then((res) => {
           success(`New Snapshot Proposal Id: ${res.snapshotProposalId}\n`);
           success(`\n::: Configuration proposal submitted!\n`);

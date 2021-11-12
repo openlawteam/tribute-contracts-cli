@@ -1,7 +1,7 @@
 const Web3 = require("web3");
 const { ethers } = require("ethers");
 const { configs } = require("../../../cli-config");
-const { sha3, toBN } = require("tribute-contracts/utils/ContractUtil");
+const { sha3 } = require("tribute-contracts/utils/ContractUtil");
 const { prepareVoteProposalData } = require("@openlaw/snapshot-js-erc712");
 const { getContract } = require("../../utils/contract");
 const { submitSnapshotProposal } = require("../../services/snapshot-service");
@@ -62,11 +62,11 @@ const submitConfigurationProposal = async ({ configurations, opts }) => {
     await contract.submitProposal(
       configs.contracts.DaoRegistry,
       daoProposalId,
-      [sha3(configurations.key)],
-      [configurations.value],
+      [...configurations],
       encodedData ? encodedData : ethers.utils.toUtf8Bytes(""),
       { from: wallet.address }
     );
+
     return { daoProposalId, snapshotProposalId };
   });
 };
