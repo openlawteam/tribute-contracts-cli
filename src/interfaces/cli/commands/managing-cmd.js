@@ -69,7 +69,7 @@ const managingCommands = (program) => {
       info(`Snapshot Proposal Id:\t${snapshotProposalId}`);
       info(`DAO Proposal Id:\t${daoProposalId}`);
 
-      return processManagingProposal(daoProposalId)
+      return processManagingProposal({ daoProposalId })
         .then((res) => {
           success(`\n::: Processed Managing proposal\n`);
         })

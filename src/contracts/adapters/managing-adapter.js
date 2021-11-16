@@ -2,14 +2,14 @@ const Web3 = require("web3");
 const { ethers } = require("ethers");
 const toBytes32 = ethers.utils.formatBytes32String;
 const { configs } = require("../../../cli-config");
-
 const { sha3 } = require("tribute-contracts/utils/ContractUtil");
 const { prepareVoteProposalData } = require("@openlaw/snapshot-js-erc712");
 const { entryDao } = require("tribute-contracts/utils/DeploymentUtil");
 const { getContract } = require("../../utils/contract");
 const { submitSnapshotProposal } = require("../../services/snapshot-service");
 const { parseDaoFlags } = require("../core/dao-registry");
-const { warn, error } = require("../../utils/logging");
+const { warn } = require("../../utils/logging");
+const { isProposalReadyToBeProcessed } = require("./offchain-voting-adapter");
 
 const submitManagingProposal = async (
   adapterName,
@@ -99,11 +99,13 @@ const submitManagingProposal = async (
   });
 };
 
-const processManagingProposal = async (daoProposalId) => {
+const processManagingProposal = async ({ daoProposalId }) => {
   const { contract, wallet } = getContract(
     "ManagingContract",
     configs.contracts.ManagingContract
   );
+
+  await isProposalReadyToBeProcessed({ daoProposalId });
 
   await contract.processProposal(configs.contracts.DaoRegistry, daoProposalId, {
     from: wallet.address,

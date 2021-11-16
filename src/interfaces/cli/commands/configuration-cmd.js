@@ -9,7 +9,6 @@ const {
 } = require("../../../utils/logging");
 const {
   sha3,
-  toBN,
   ZERO_ADDRESS,
 } = require("tribute-contracts/utils/ContractUtil");
 const { configs } = require("../../../../cli-config");
@@ -49,7 +48,7 @@ const configurationCommands = (program) => {
       info(`Snapshot Proposal Id:\t${snapshotProposalId}`);
       info(`DAO Proposal Id:\t${daoProposalId}`);
 
-      return processConfigurationProposal(daoProposalId)
+      return processConfigurationProposal({ daoProposalId })
         .then((res) => {
           success(`\n::: Processed Configuration proposal\n`);
         })
