@@ -6,6 +6,7 @@ const { prepareVoteProposalData } = require("@openlaw/snapshot-js-erc712");
 const { getContract } = require("../../utils/contract");
 const { submitSnapshotProposal } = require("../../services/snapshot-service");
 const { warn } = require("../../utils/logging");
+const { isProposalReadyToBeProcessed } = require("./offchain-voting-adapter");
 
 const submitConfigurationProposal = async ({ configurations, opts }) => {
   const { contract, provider, wallet } = getContract(
@@ -71,11 +72,13 @@ const submitConfigurationProposal = async ({ configurations, opts }) => {
   });
 };
 
-const processConfigurationProposal = async (daoProposalId) => {
+const processConfigurationProposal = async ({ daoProposalId }) => {
   const { contract, wallet } = getContract(
     "ConfigurationContract",
     configs.contracts.ConfigurationContract
   );
+
+  await isProposalReadyToBeProcessed({ daoProposalId });
 
   await contract.processProposal(configs.contracts.DaoRegistry, daoProposalId, {
     from: wallet.address,

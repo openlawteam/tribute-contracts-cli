@@ -242,4 +242,36 @@ const getVoteState = async ({ daoProposalId }) => {
   return VotingState[votingStateId];
 };
 
-module.exports = { newOffchainVote, submitOffchainResult, getVoteState };
+const isProposalReadyToBeProcessed = async ({ daoProposalId }) => {
+  const { contract: offchainContract, wallet } = getContract(
+    "OffchainVotingContract",
+    configs.contracts.OffchainVotingContract
+  );
+
+  const votingStateId = await offchainContract.voteResult(
+    configs.contracts.DaoRegistry,
+    daoProposalId,
+    { from: wallet.address }
+  );
+  if (configs.debug) warn(`\nVote state id: ${votingStateId}`);
+  switch (votingStateId) {
+    case 2: //"PASS"
+      return Promise.resolve(true);
+    case 0: //"NOT_STARTED",
+    case 1: //"TIE",
+    case 3: //"NOT_PASS",
+    case 4: //"IN_PROGRESS",
+    case 5: //"GRACE_PERIOD",
+    default:
+      return Promise.reject(
+        `Proposal not ready to be processed, state: ${VotingState[votingStateId]}`
+      );
+  }
+};
+
+module.exports = {
+  newOffchainVote,
+  submitOffchainResult,
+  getVoteState,
+  isProposalReadyToBeProcessed,
+};
