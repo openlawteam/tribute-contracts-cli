@@ -53,7 +53,7 @@ const managingCommands = (program) => {
         })
         .then((data) => {
           success(`New Snapshot Proposal Id: ${data.snapshotProposalId}\n`);
-          notice(`::: Managing proposal submitted!\n`);
+          notice(`::: Managing proposal submitted!\n`, true);
         })
         .catch((err) => error("Error while submitting managing proposal", err));
     });
@@ -71,7 +71,7 @@ const managingCommands = (program) => {
 
       return processManagingProposal({ daoProposalId })
         .then((res) => {
-          success(`\n::: Processed Managing proposal\n`);
+          success(`\n::: Processed Managing proposal\n`, true);
         })
         .catch((err) => error("Error while processing managing proposal", err));
     });

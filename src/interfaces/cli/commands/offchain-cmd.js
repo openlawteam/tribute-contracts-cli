@@ -49,7 +49,7 @@ const offchainCommands = (program) => {
         .then((res) => {
           notice(`Member ${res.memberAddress} has voted "${res.choice}"\n`);
           notice(`Snapshot Proposal Id ${snapshotProposalId}\n`);
-          success("::: Offchain vote submitted to Snapshot Hub.");
+          success(`::: Offchain vote submitted to Snapshot Hub`, true);
         })
         .catch((err) => error("Error while voting on proposal", err));
     });
@@ -70,7 +70,7 @@ const offchainCommands = (program) => {
         .then((res) => {
           notice(`DAO Proposal Id ${res.daoProposalId}\n`);
           notice(`Snapshot Proposal Id ${res.snapshotProposalId}\n`);
-          success(`::: Offchain vote results submitted to the DAO`);
+          success(`::: Offchain vote results submitted to the DAO`, true);
         })
         .catch((err) => error("Error while submitting vote results", err));
     });
@@ -88,7 +88,7 @@ const offchainCommands = (program) => {
       info(`DAO Proposal Id:\t${daoProposalId}`);
 
       return getVoteState({ daoProposalId })
-        .then((voteState) => notice(`Vote state: ${voteState}\n`))
+        .then((voteState) => success(`Vote state: ${voteState}`, true))
         .catch((err) => error("Error while getting vote state", err));
     });
 

@@ -8,8 +8,12 @@ const warn = (msg) => {
   console.log(chalk.yellow(msg));
 };
 
-const success = (msg) => {
-  console.log(chalk.greenBright(msg));
+const success = (msg, showDateTime = false) => {
+  console.log(
+    chalk.greenBright(
+      `${msg}${showDateTime ? " \n" + new Date().toLocaleString() : ""}`
+    )
+  );
 };
 
 const notice = (msg) => {
