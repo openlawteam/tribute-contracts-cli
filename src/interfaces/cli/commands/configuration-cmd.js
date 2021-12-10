@@ -29,7 +29,7 @@ const configurationCommands = (program) => {
         )
         .then((res) => {
           success(`New Snapshot Proposal Id: ${res.snapshotProposalId}\n`);
-          success(`\n::: Configuration proposal submitted!\n`);
+          success(`\n::: Configuration proposal submitted!\n`, true);
         })
         .catch((err) =>
           error("Error while processing configuration proposal", err)
@@ -49,7 +49,7 @@ const configurationCommands = (program) => {
 
       return processConfigurationProposal({ daoProposalId })
         .then((res) => {
-          success(`\n::: Processed Configuration proposal\n`);
+          success(`\n::: Processed Configuration proposal\n`, true);
         })
         .catch((err) =>
           error("Error while processing configuration proposal", err)
