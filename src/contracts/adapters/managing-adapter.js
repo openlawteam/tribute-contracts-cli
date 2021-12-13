@@ -10,19 +10,43 @@ const { submitSnapshotProposal } = require("../../services/snapshot-service");
 const { parseDaoFlags } = require("../core/dao-registry");
 const { warn } = require("../../utils/logging");
 const { isProposalReadyToBeProcessed } = require("./offchain-voting-adapter");
+const { parseConfigs } = require("./configuration-adapter");
+const {
+  aclsMap,
+  getAclFlagValueForExtension,
+} = require("../../utils/access-flags");
 
-const submitManagingProposal = async (
-  adapterName,
-  adapterAddress,
+const submitManagingProposal = async ({
+  adapterOrExtensionId,
+  adapterOrExtensionAddress,
+  updateType,
   aclFlags,
-  keys,
-  values,
-  data,
-  opts
-) => {
-  const configKeys = keys ? keys.split(",").map((k) => toBytes32(k)) : [];
-  const configValues = values ? values.split(",").map((v) => v) : [];
-  const configAclFlags = parseDaoFlags(aclFlags);
+  numericConfigKeys,
+  numericConfigValues,
+  extensions,
+  configurations,
+  opts,
+}) => {
+  const configKeys = numericConfigKeys
+    ? numericConfigKeys.map((k) => sha3(k))
+    : [];
+  const configValues = numericConfigValues ? numericConfigValues : [];
+  const configAclFlags = aclFlags ? parseDaoFlags(aclFlags) : [];
+  const extensionAddresses = [];
+  const extensionAclFlags = [];
+  Object.values(extensions).forEach((e) => {
+    extensionAddresses.push(e.data.address);
+    const allAclsForExtension = aclsMap[e.extensionId];
+    extensionAclFlags.push(
+      getAclFlagValueForExtension(
+        e.extensionId,
+        allAclsForExtension,
+        e.data.flags
+      )
+    );
+  });
+
+  const daoConfigurations = configurations ? parseConfigs(configurations) : [];
 
   const { contract, provider, wallet } = getContract(
     "ManagingContract",
@@ -30,8 +54,8 @@ const submitManagingProposal = async (
   );
 
   return await submitSnapshotProposal(
-    `Adapter: ${adapterName}`,
-    "Create/Update adapter",
+    `Adapter: ${adapterOrExtensionId}`,
+    "Create/Update adapter/extension",
     configs.contracts.ManagingContract,
     provider,
     wallet
@@ -56,8 +80,8 @@ const submitManagingProposal = async (
     };
     warn(`DAO Message: ${JSON.stringify(message)}\n`);
 
-    const encodedData = prepareVoteProposalData(message, new Web3(""));
-    warn(`Encoded DAO message: ${encodedData}\n`);
+    const encodedProposalData = prepareVoteProposalData(message, new Web3(""));
+    warn(`Encoded DAO message: ${encodedProposalData}\n`);
 
     const { contract: offchainContract } = getContract(
       "OffchainVotingContract",
@@ -67,7 +91,7 @@ const submitManagingProposal = async (
     const sender = await offchainContract.getSenderAddress(
       configs.contracts.DaoRegistry,
       configs.contracts.ManagingContract,
-      encodedData,
+      encodedProposalData,
       wallet.address,
       { from: wallet.address }
     );
@@ -78,24 +102,27 @@ const submitManagingProposal = async (
       );
     }
 
+    const proposalDetails = {
+      adapterOrExtensionId: sha3(adapterOrExtensionId),
+      adapterOrExtensionAddr: adapterOrExtensionAddress,
+      flags: entryDao(
+        adapterOrExtensionId,
+        { address: adapterOrExtensionAddress },
+        configAclFlags
+      ).flags,
+      updateType: parseUpdateType(updateType),
+      keys: configKeys,
+      values: configValues,
+      extensionAddresses,
+      extensionAclFlags,
+    };
+
     await contract.submitProposal(
       configs.contracts.DaoRegistry,
       daoProposalId,
-      {
-        adapterOrExtensionId: sha3(adapterName),
-        adapterOrExtensionAddr: adapterAddress,
-        flags: entryDao(
-          adapterName,
-          { address: adapterAddress },
-          configAclFlags
-        ).flags,
-        updateType: 1,
-        keys: configKeys,
-        values: configValues,
-        extensionAddresses: [],
-        extensionAclFlags: [],
-      },
-      encodedData ? encodedData : ethers.utils.toUtf8Bytes(""),
+      proposalDetails,
+      [...daoConfigurations],
+      encodedProposalData,
       { from: wallet.address }
     );
     return { daoProposalId, snapshotProposalId };
@@ -115,6 +142,17 @@ const processManagingProposal = async ({ daoProposalId }) => {
   });
 
   return { daoProposalId };
+};
+
+const parseUpdateType = async (value) => {
+  switch (value) {
+    case "Adapter":
+      return 1;
+    case "Extension":
+      return 2;
+    default:
+      throw Error(`Unknown update type: ${value}`);
+  }
 };
 
 module.exports = { submitManagingProposal, processManagingProposal };

@@ -7,10 +7,7 @@ const {
   logEnvConfigs,
   error,
 } = require("../../../utils/logging");
-const {
-  sha3,
-  ZERO_ADDRESS,
-} = require("tribute-contracts/utils/ContractUtil");
+const { sha3 } = require("tribute-contracts/utils/ContractUtil");
 const { configs } = require("../../../../cli-config");
 const {
   submitConfigurationProposal,
@@ -24,33 +21,12 @@ const configurationCommands = (program) => {
     .action(async () => {
       notice(`\n::: Submitting configuration proposal...\n`);
       await collectConfigs()
-        .then((inputs) => {
-          if (process.env.DEBUG) console.log(inputs);
-          const configs = [];
-          Array.from(inputs).forEach((i) => {
-            if (i.configType === "Numeric") {
-              configs.push({
-                key: sha3(i.configKey),
-                configType: 0, // Numeric
-                numericValue: i.configValue,
-                addressValue: ZERO_ADDRESS,
-              });
-            } else if (i.configType === "Address") {
-              configs.push({
-                key: sha3(i.configKey),
-                configType: 1, // Address
-                numericValue: 0,
-                addressValue: ethers.utils.getAddress(i.configValue),
-              });
-            }
-          });
-          if (process.env.DEBUG) console.log(configs);
-
-          return submitConfigurationProposal({
-            configurations: configs,
+        .then((configurations) =>
+          submitConfigurationProposal({
+            configurations,
             opts: program.opts(),
-          });
-        })
+          })
+        )
         .then((res) => {
           success(`New Snapshot Proposal Id: ${res.snapshotProposalId}\n`);
           success(`\n::: Configuration proposal submitted!\n`);
@@ -88,12 +64,12 @@ const collectConfigs = async (inputs = []) => {
     {
       type: "input",
       name: "configKey",
-      message: `Type the configuration name:`,
+      message: `Type the DAO configuration name:`,
     },
     {
       type: "list",
       name: "configType",
-      message: `Which type of configuration do you want to update?`,
+      message: `Which type of DAO configuration do you want to add/update?`,
       choices: ["Numeric", "Address"],
     },
     {
@@ -119,7 +95,7 @@ const collectConfigs = async (inputs = []) => {
     {
       type: "confirm",
       name: "repeat",
-      message: "Enter another config? ",
+      message: "Enter another DAO config? ",
       default: false,
     },
   ];
@@ -129,4 +105,4 @@ const collectConfigs = async (inputs = []) => {
   return repeat ? collectConfigs(newInputs) : newInputs;
 };
 
-module.exports = { configurationCommands };
+module.exports = { configurationCommands, collectConfigs };

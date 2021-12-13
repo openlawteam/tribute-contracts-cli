@@ -1,7 +1,7 @@
 const Web3 = require("web3");
 const { ethers } = require("ethers");
 const { configs } = require("../../../cli-config");
-const { sha3 } = require("tribute-contracts/utils/ContractUtil");
+const { sha3, ZERO_ADDRESS } = require("tribute-contracts/utils/ContractUtil");
 const { prepareVoteProposalData } = require("@openlaw/snapshot-js-erc712");
 const { getContract } = require("../../utils/contract");
 const { submitSnapshotProposal } = require("../../services/snapshot-service");
@@ -14,8 +14,8 @@ const submitConfigurationProposal = async ({ configurations, opts }) => {
     configs.contracts.ConfigurationContract
   );
   return await submitSnapshotProposal(
-    `Keys: ${configurations.key}: ${configurations.value}`,
-    "Creates/Update configuration",
+    `Configurations`,
+    `Create/Update DAO Configurations`,
     configs.contracts.ConfigurationContract,
     provider,
     wallet
@@ -63,7 +63,7 @@ const submitConfigurationProposal = async ({ configurations, opts }) => {
     await contract.submitProposal(
       configs.contracts.DaoRegistry,
       daoProposalId,
-      [...configurations],
+      [...parseConfigs(configurations)],
       encodedData ? encodedData : ethers.utils.toUtf8Bytes(""),
       { from: wallet.address }
     );
@@ -87,4 +87,32 @@ const processConfigurationProposal = async ({ daoProposalId }) => {
   return { daoProposalId };
 };
 
-module.exports = { submitConfigurationProposal, processConfigurationProposal };
+const parseConfigs = (inputs) => {
+  if (process.env.DEBUG) console.log(inputs);
+  const configurations = [];
+  Array.from(inputs).forEach((i) => {
+    if (i.configType === "Numeric") {
+      configurations.push({
+        key: sha3(i.configKey),
+        configType: 0, // Numeric
+        numericValue: i.configValue,
+        addressValue: ZERO_ADDRESS,
+      });
+    } else if (i.configType === "Address") {
+      configurations.push({
+        key: sha3(i.configKey),
+        configType: 1, // Address
+        numericValue: 0,
+        addressValue: ethers.utils.getAddress(i.configValue),
+      });
+    }
+  });
+  if (process.env.DEBUG) console.log(configurations);
+  return configurations;
+};
+
+module.exports = {
+  submitConfigurationProposal,
+  processConfigurationProposal,
+  parseConfigs,
+};
