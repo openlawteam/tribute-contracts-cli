@@ -59,12 +59,14 @@ const submitConfigurationProposal = async ({ configurations, opts }) => {
         `voting.getSenderAddress ${sender} does not match the actual wallet sender: ${wallet.address}`
       );
     }
-
+    const keys = configurations.keys.split(",").map((k) => sha3(k));
+    const values = configurations.values.split(",").map((v) => parseInt(v));
+    if (process.env.DEBUG) console.log({ keys, values });
     await contract.submitProposal(
       configs.contracts.DaoRegistry,
       daoProposalId,
-      [sha3(configurations.key)],
-      [configurations.value],
+      [...keys],
+      [...values],
       encodedData ? encodedData : ethers.utils.toUtf8Bytes(""),
       { from: wallet.address }
     );

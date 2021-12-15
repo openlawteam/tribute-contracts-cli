@@ -19,13 +19,13 @@ const {
 
 const configurationCommands = (program) => {
   program
-    .command("config-proposal <key> <value>")
+    .command("config-proposal <keys> <values>")
     .description("Submit a new configuration proposal.")
-    .action(async (key, value) => {
+    .action(async (keys, values) => {
       notice(`\n::: Submitting configuration proposal...\n`);
 
       return submitConfigurationProposal({
-        configurations: { key, value },
+        configurations: { keys, values },
         opts: program.opts(),
       })
         .then((res) => {
