@@ -11,7 +11,7 @@
   },
   "scripts": {
     "compile": "truffle compile",
-    "build": "npm install && rimraf build/ && npm run compile",
+    "build": "rm -rf build/ && rm -rf node_modules/ && npm install && npm run compile",
     "release": "np"
   },
   "author": "dev@openlaw.io",
@@ -25,7 +25,7 @@
     "ethereumjs-util": "7.1.0",
     "ethers": "5.4.5",
     "inquirer": "^8.1.2",
-    "tribute-contracts": "^1.0.1",
+    "tribute-contracts": "1.0.1",
     "truffle": "5.4.6",
     "web3": "^1.4.0"
   },

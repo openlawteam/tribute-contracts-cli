@@ -7,7 +7,12 @@ const { getNetworkDetails } = require("tribute-contracts/utils/DeploymentUtil");
 const openWallet = (provider) => {
   // The Wallet class inherits Signer and can sign transactions
   // and messages using a private key as a standard Externally Owned Account (EOA).
-  const wallet = ethers.Wallet.fromMnemonic(configs.truffleMnemonic);
+  let wallet;
+  try {
+    wallet = ethers.Wallet.fromMnemonic(configs.truffleMnemonic);
+  } catch (e) {
+    wallet = new ethers.Wallet(configs.truffleMnemonic);
+  }
   return wallet.connect(provider);
 };
 
