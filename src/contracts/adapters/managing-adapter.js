@@ -11,16 +11,14 @@ const { parseDaoFlags } = require("../core/dao-registry");
 const { warn } = require("../../utils/logging");
 const { isProposalReadyToBeProcessed } = require("./offchain-voting-adapter");
 
-const submitManagingProposal = async (
+const submitManagingProposal = async ({
   adapterName,
   adapterAddress,
   aclFlags,
   keys,
   values,
-  data,
-  opts
-) => {
-  const configKeys = keys ? keys.split(",").map((k) => toBytes32(k)) : [];
+}) => {
+  const configKeys = keys ? keys.split(",").map((k) => sha3(k)) : [];
   const configValues = values ? values.split(",").map((v) => v) : [];
   const configAclFlags = parseDaoFlags(aclFlags);
 
@@ -90,9 +88,7 @@ const submitManagingProposal = async (
           configAclFlags
         ).flags,
       },
-      configKeys,
-      configValues,
-      encodedData ? encodedData : ethers.utils.toUtf8Bytes(""),
+      encodedData,
       { from: wallet.address }
     );
     return { daoProposalId, snapshotProposalId };

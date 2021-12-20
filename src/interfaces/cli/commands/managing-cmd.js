@@ -18,11 +18,9 @@ const { sha3 } = require("tribute-contracts/utils/ContractUtil");
 
 const managingCommands = (program) => {
   program
-    .command(
-      "managing-proposal <adapterId> <adapterAddress> [keys] [values] [data]"
-    )
+    .command("managing-proposal <adapterId> <adapterAddress> [keys] [values]")
     .description("Submit a new managing proposal.")
-    .action(async (adapterName, adapterAddress, keys, values, data) => {
+    .action(async (adapterName, adapterAddress, keys, values) => {
       await inquirer
         .prompt([
           {
@@ -39,17 +37,15 @@ const managingCommands = (program) => {
           info(`AccessFlags:\t\t${JSON.stringify(answers.aclFlags)}`);
           info(`Keys:\t\t\t${keys ? keys : "n/a"}`);
           info(`Values:\t\t\t${values ? values : "n/a"}`);
-          info(`Data:\t\t\t${data ? data : "n/a"}\n`);
 
-          return submitManagingProposal(
+          return submitManagingProposal({
             adapterName,
             adapterAddress,
-            answers.aclFlags,
+            aclFlags: answers.aclFlags,
             keys,
             values,
-            data,
-            program.opts()
-          );
+            opts: program.opts(),
+          });
         })
         .then((data) => {
           success(`New Snapshot Proposal Id: ${data.snapshotProposalId}\n`);
