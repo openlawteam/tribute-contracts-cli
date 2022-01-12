@@ -14,7 +14,6 @@
     "tsc": "tsc",
     "build": "npm ci && npm run compile",
     "compile": "rimraf build && mkdir -p build/contracts && cp -r node_modules/tribute-contracts/contracts/** build/contracts && hardhat compile",
-    "test": "echo \"Error: no test found\"",
     "release": "np --no-publish",
     "lint:fix": "prettier --write '**/*.{js,ts,json}'",
     "lint": "prettier --check '**/*.{js,ts,json}'"

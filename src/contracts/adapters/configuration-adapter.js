@@ -3,23 +3,22 @@ import { ethers } from "ethers";
 import { configs } from "../../../cli-config.js";
 import { sha3, toBN } from "tribute-contracts/utils/contract-util.js";
 import { prepareVoteProposalData } from "@openlaw/snapshot-js-erc712";
-import { getContract } from "../../utils/contract.js";
+import { getAdapter, getContract } from "../../utils/contract.js";
 import { submitSnapshotProposal } from "../../services/snapshot-service.js";
 import { warn } from "../../utils/logging.js";
-import { getAdapterAddress } from "../core/dao-registry.js";
+import { checkSenderAddress } from "./offchain-voting-adapter.js";
 
-export const submitConfigurationProposal = async (key, value, opts) => {
-  const configurationContractAddress = await getAdapterAddress("configuration");
-
-  const { contract, provider, wallet } = getContract(
-    "ConfigurationContract",
-    configurationContractAddress
-  );
+export const submitConfigurationProposal = async ({ configurations, opts }) => {
+  const {
+    contract: configAdapter,
+    provider,
+    wallet,
+  } = getAdapter("ConfigurationContract");
 
   return await submitSnapshotProposal(
     `Key: ${key} -> ${value}`,
     "Creates/Update configuration",
-    configurationContractAddress,
+    configAdapter.address,
     provider,
     wallet
   ).then(async (res) => {
@@ -45,27 +44,30 @@ export const submitConfigurationProposal = async (key, value, opts) => {
     const encodedData = prepareVoteProposalData(message, new Web3(""));
     if (opts.debug) warn(`Encoded DAO message: ${encodedData}\n`);
 
-    await contract.submitProposal(
+    await checkSenderAddress({
+      adapterAddress: configAdapter.address,
+      encodedData,
+      sender: wallet.address,
+    });
+
+    await configAdapter.submitProposal(
       configs.dao,
       daoProposalId,
-      [sha3(key)],
-      [value],
-      encodedData ? encodedData : ethers.utils.toUtf8Bytes(""),
+      [sha3(configurations.key)],
+      [configurations.value],
+      encodedData,
       { from: wallet.address }
     );
     return { daoProposalId, snapshotProposalId };
   });
 };
 
-export const processConfigurationProposal = async (daoProposalId) => {
-  const configurationContractAddress = await getAdapterAddress("configuration");
-
-  const { contract, wallet } = getContract(
-    "ConfigurationContract",
-    configurationContractAddress
+export const processConfigurationProposal = async ({ daoProposalId }) => {
+  const { contract: configAdapter, wallet } = getAdapter(
+    "ConfigurationContract"
   );
 
-  await contract.processProposal(configs.dao, daoProposalId, {
+  await configAdapter.processProposal(configs.dao, daoProposalId, {
     from: wallet.address,
   });
 

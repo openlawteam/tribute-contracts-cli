@@ -2,6 +2,10 @@ import hre from "hardhat";
 import { ethers } from "ethers";
 import { configs } from "../../cli-config.js";
 import { getNetworkDetails } from "tribute-contracts/utils/deployment-util.js";
+import {
+  getExtensionAddress,
+  getAdapterAddress,
+} from "../contracts/core/dao-registry.js";
 
 export const openWallet = (provider) => {
   // The Wallet class inherits Signer and can sign transactions
@@ -16,19 +20,19 @@ export const getProvider = (network) => {
 
   switch (network) {
     case "rinkeby":
-      return ethers.getDefaultProvider(network, {
-        url: configs.ethBlockchainApi,
-        network: {
-          chainId: 4,
-        },
-      });
     case "mainnet":
-      return ethers.getDefaultProvider(network, {
-        url: configs.ethBlockchainApi,
-        network: {
-          chainId: 1,
-        },
-      });
+      if (configs.alchemyApiKey)
+        return new ethers.providers.AlchemyProvider(
+          network,
+          configs.alchemyApiKey
+        );
+      if (configs.infuraApiKey)
+        return new ethers.providers.InfuraProvider(
+          network,
+          configs.infuraApiKey
+        );
+
+      return ethers.getDefaultProvider(network);
 
     case "ganache":
     default:
@@ -53,11 +57,23 @@ export const attachContract = (address, abi, wallet) => {
   return contract.connect(wallet);
 };
 
-export const getContract = (name, contract) => {
+export const getAdapter = (name) => {
+  const adapterAddress = await getAdapterAddress(name);
   const provider = getProvider(configs.network);
   const wallet = openWallet(provider);
   return {
-    contract: attachContract(contract, getABI(name), wallet),
+    contract: attachContract(adapterAddress, getABI(name), wallet),
+    provider,
+    wallet,
+  };
+};
+
+export const getExtension = (name) => {
+  const adapterAddress = await getExtensionAddress(name);
+  const provider = getProvider(configs.network);
+  const wallet = openWallet(provider);
+  return {
+    contract: attachContract(adapterAddress, getABI(name), wallet),
     provider,
     wallet,
   };

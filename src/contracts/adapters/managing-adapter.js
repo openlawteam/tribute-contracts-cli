@@ -15,15 +15,12 @@ import {
 } from "tribute-contracts/utils/access-control-util.js";
 import { getContract } from "../../utils/contract.js";
 import { submitSnapshotProposal } from "../../services/snapshot-service.js";
-import {
-  getExtensionAddress,
-  getAdapterAddress,
-} from "../core/dao-registry.js";
+import { getExtensionAddress } from "../core/dao-registry.js";
 import { warn } from "../../utils/logging.js";
 
 const toBytes32 = ethers.utils.formatBytes32String;
 
-export const submitManagingProposal = async (
+export const submitManagingProposal = async ({
   updateType,
   adapterName,
   adapterAddress,
@@ -31,8 +28,8 @@ export const submitManagingProposal = async (
   extensions,
   keys,
   values,
-  opts
-) => {
+  opts,
+}) => {
   const configKeys = keys ? keys.split(",").map((k) => toBytes32(k)) : [];
   const configValues = values ? values.split(",").map((v) => v) : [];
   const configAclFlags = parseSelectedFlags(
@@ -40,12 +37,11 @@ export const submitManagingProposal = async (
     selectedDaoAclFlags,
     "DaoRegisty"
   );
-  const managingContractAddress = await getAdapterAddress("managing");
-
-  const { contract, provider, wallet } = getContract(
-    "ManagingContract",
-    managingContractAddress
-  );
+  const {
+    contract: managingAdapter,
+    provider,
+    wallet,
+  } = getContract("ManagingContract");
 
   const { extensionAddresses, extensionAclFlags } = await validateExtensions(
     extensions
@@ -54,7 +50,7 @@ export const submitManagingProposal = async (
   return await submitSnapshotProposal(
     `Adapter: ${adapterName}`,
     "Creates/Update adapter",
-    managingContractAddress,
+    managingAdapter.address,
     provider,
     wallet
   ).then(async (res) => {
@@ -82,7 +78,13 @@ export const submitManagingProposal = async (
     const encodedData = prepareVoteProposalData(message, new Web3(""));
     if (opts.debug) warn(`Encoded DAO message: ${encodedData}\n`);
 
-    await contract.submitProposal(
+    await checkSenderAddress({
+      adapterAddress: managingAdapter.address,
+      encodedData,
+      sender: wallet.address,
+    });
+
+    await managingAdapter.submitProposal(
       configs.dao,
       daoProposalId,
       {
@@ -92,6 +94,7 @@ export const submitManagingProposal = async (
         flags: entryDao(
           adapterName,
           adapterAddress,
+          //FIXME parse the extension flags
           { dao: undefined, extensions: undefined } //configAclFlags}
         ).flags,
         keys: configKeys,
@@ -99,7 +102,7 @@ export const submitManagingProposal = async (
         extensionAddresses: extensionAddresses,
         extensionAclFlags: extensionAclFlags,
       },
-      encodedData ? encodedData : ethers.utils.toUtf8Bytes(""),
+      encodedData,
       { from: wallet.address }
     );
 
@@ -107,14 +110,10 @@ export const submitManagingProposal = async (
   });
 };
 
-export const processManagingProposal = async (daoProposalId) => {
-  const managingContractAddress = await getAdapterAddress("managing");
-  const { contract, wallet } = getContract(
-    "ManagingContract",
-    managingContractAddress
-  );
+export const processManagingProposal = async ({ daoProposalId }) => {
+  const { contract: managingAdapter, wallet } = getContract("ManagingContract");
 
-  await contract.processProposal(configs.dao, daoProposalId, {
+  await managingAdapter.processProposal(configs.dao, daoProposalId, {
     from: wallet.address,
   });
 

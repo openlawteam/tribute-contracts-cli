@@ -219,3 +219,27 @@ export const submitOffchainResult = async (
     voteResultHexRoot: voteResultTree.getHexRoot(),
   };
 };
+
+export const checkSenderAddress = async ({
+  adapterAddress,
+  encodedData,
+  sender,
+}) => {
+  const { contract: offchainVotingAdapter } = getAdapter(
+    "OffchainVotingContract"
+  );
+
+  const retrievedSender = await offchainVotingAdapter.getSenderAddress(
+    configs.dao,
+    adapterAddress,
+    encodedData,
+    sender,
+    { from: sender }
+  );
+
+  if (sender !== retrievedSender) {
+    throw Error(
+      `voting.getSenderAddress ${retrievedSender} does not match the actual wallet sender: ${sender}`
+    );
+  }
+};

@@ -18,7 +18,11 @@ export const configurationCommands = (program) => {
     .description("Submit a new Configuration proposal.")
     .action(async (key, value) => {
       notice(`\n::: Submitting Configuration proposal...\n`);
-      return submitConfigurationProposal(key, value, program.opts())
+      //TODO input multiple configs using .collectConfigs function
+      return submitConfigurationProposal({
+        configurations: { key, value },
+        opts: program.opts(),
+      })
         .then((res) => {
           success(`New Snapshot Proposal Id: ${res.snapshotProposalId}\n`);
           success(`\n::: Configuration proposal submitted!\n`);
@@ -27,6 +31,7 @@ export const configurationCommands = (program) => {
           error("Error while processing configuration proposal", err)
         );
     });
+
   program
     .command("config-process <snapshotProposalId>")
     .description("Process an existing configuration proposal.")
@@ -38,7 +43,7 @@ export const configurationCommands = (program) => {
       info(`Snapshot Proposal Id:\t${snapshotProposalId}`);
       info(`DAO Proposal Id:\t${daoProposalId}`);
 
-      return processConfigurationProposal(daoProposalId)
+      return processConfigurationProposal({ daoProposalId })
         .then((res) => {
           success(`\n::: Processed Configuration proposal\n`);
         })
@@ -48,4 +53,50 @@ export const configurationCommands = (program) => {
     });
 
   return program;
+};
+
+const collectConfigs = async (inputs = []) => {
+  const prompts = [
+    {
+      type: "input",
+      name: "configKey",
+      message: `Type the configuration name:`,
+    },
+    {
+      type: "list",
+      name: "configType",
+      message: `Which type of configuration do you want to update?`,
+      choices: ["Numeric", "Address"],
+    },
+    {
+      type: "input",
+      name: "configValue",
+      message: (answers) =>
+        `Type the ${answers.configType} configuration value:`,
+      validate: (input, answers) => {
+        switch (answers.configType) {
+          case "Numeric": {
+            if (ethers.BigNumber.from(input)) return true;
+            return "Not a number";
+          }
+          case "Address": {
+            if (ethers.utils.isAddress(input)) return true;
+            return "Not an ethereum address";
+          }
+          default:
+            return "Invalid config value";
+        }
+      },
+    },
+    {
+      type: "confirm",
+      name: "repeat",
+      message: "Enter another config? ",
+      default: false,
+    },
+  ];
+
+  const { repeat, ...answers } = await inquirer.prompt(prompts);
+  const newInputs = [...inputs, answers];
+  return repeat ? collectConfigs(newInputs) : newInputs;
 };
