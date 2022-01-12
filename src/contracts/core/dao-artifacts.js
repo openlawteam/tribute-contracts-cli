@@ -1,13 +1,19 @@
-const { sha3 } = require("tribute-contracts/utils/ContractUtil");
-const { getContract } = require("../../utils/contract");
-const { ethers } = require("ethers");
+import { ethers } from "ethers";
+import { sha3 } from "tribute-contracts/utils/contract-util.js";
+import { getContract } from "../../utils/contract.js";
 
-const getOwner = async (daoArtifactsAddress) => {
+export const getOwner = async (daoArtifactsAddress) => {
   const { contract } = getContract("DaoArtifacts", daoArtifactsAddress);
   return await contract.owner();
 };
 
-const addArtifact = async (id, version, address, type, daoArtifactsAddress) => {
+export const addArtifact = async (
+  id,
+  version,
+  address,
+  type,
+  daoArtifactsAddress
+) => {
   const { contract } = getContract("DaoArtifacts", daoArtifactsAddress);
   return await contract.addArtifact(
     sha3(id),
@@ -17,7 +23,7 @@ const addArtifact = async (id, version, address, type, daoArtifactsAddress) => {
   );
 };
 
-const getArtifactAddress = async (
+export const getArtifactAddress = async (
   id,
   owner,
   version,
@@ -31,10 +37,4 @@ const getArtifactAddress = async (
     ethers.utils.formatBytes32String(version),
     type
   );
-};
-
-module.exports = {
-  getOwner,
-  addArtifact,
-  getArtifactAddress,
 };

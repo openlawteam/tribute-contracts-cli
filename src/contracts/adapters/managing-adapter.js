@@ -1,29 +1,29 @@
-const Web3 = require("web3");
-const { ethers } = require("ethers");
-const toBytes32 = ethers.utils.formatBytes32String;
-const { configs } = require("../../../cli-config");
-const { sha3 } = require("tribute-contracts/utils/ContractUtil");
-const { prepareVoteProposalData } = require("@openlaw/snapshot-js-erc712");
-const {
+import Web3 from "web3";
+import { ethers } from "ethers";
+import { configs } from "../../../cli-config.js";
+import { sha3 } from "tribute-contracts/utils/contract-util.js";
+import { prepareVoteProposalData } from "@openlaw/snapshot-js-erc712";
+import {
+  daoAccessFlags,
   entryDao,
   entryBank,
   entryERC1271,
   entryExecutor,
-  entryNft,
-} = require("tribute-contracts/utils/DeploymentUtil");
-const {
-  daoAccessFlags,
+  entryERC721,
+  entryERC1155,
   parseSelectedFlags,
-} = require("tribute-contracts/utils/aclFlags");
-const { getContract } = require("../../utils/contract");
-const { submitSnapshotProposal } = require("../../services/snapshot-service");
-const {
+} from "tribute-contracts/utils/access-control-util.js";
+import { getContract } from "../../utils/contract.js";
+import { submitSnapshotProposal } from "../../services/snapshot-service.js";
+import {
   getExtensionAddress,
   getAdapterAddress,
-} = require("../core/dao-registry");
-const { warn } = require("../../utils/logging");
+} from "../core/dao-registry.js";
+import { warn } from "../../utils/logging.js";
 
-const submitManagingProposal = async (
+const toBytes32 = ethers.utils.formatBytes32String;
+
+export const submitManagingProposal = async (
   updateType,
   adapterName,
   adapterAddress,
@@ -91,8 +91,8 @@ const submitManagingProposal = async (
         updateType: updateType,
         flags: entryDao(
           adapterName,
-          { address: adapterAddress },
-          configAclFlags
+          adapterAddress,
+          { dao: undefined, extensions: undefined } //configAclFlags}
         ).flags,
         keys: configKeys,
         values: configValues,
@@ -107,7 +107,7 @@ const submitManagingProposal = async (
   });
 };
 
-const processManagingProposal = async (daoProposalId) => {
+export const processManagingProposal = async (daoProposalId) => {
   const managingContractAddress = await getAdapterAddress("managing");
   const { contract, wallet } = getContract(
     "ManagingContract",
@@ -145,33 +145,35 @@ const validateExtensions = async (extensions) => {
       ext.selectedFlags,
       ext.name
     );
-    switch (ext.id) {
-      case "bank":
-        extensionAclFlags.push(
-          entryBank({ address: undefined }, parsedAclFlags).flags
-        );
-        break;
-      case "nft":
-      case "erc1155-ext":
-        extensionAclFlags.push(
-          entryNft({ address: undefined }, parsedAclFlags).flags
-        );
-        break;
-      case "erc1271":
-        extensionAclFlags.push(
-          entryERC1271({ address: undefined }, parsedAclFlags).flags
-        );
-        break;
-      case "erc1271":
-        extensionAclFlags.push(
-          entryExecutor({ address: undefined }, parsedAclFlags).flags
-        );
-        break;
-      default:
-        throw Error(`ACL flag not supported for extension: ${ext.name}`);
-    }
+    // switch (ext.id) {
+    //   case "bank":
+    //     extensionAclFlags.push(
+    //       entryBank({ address: undefined }, parsedAclFlags).flags
+    //     );
+    //     break;
+    //   case "nft":
+    //     extensionAclFlags.push(
+    //       entryERC721({ address: undefined }, parsedAclFlags).flags
+    //     );
+    //     break;
+    //   case "erc1155-ext":
+    //     extensionAclFlags.push(
+    //       entryERC1155({ address: undefined }, parsedAclFlags).flags
+    //     );
+    //     break;
+    //   case "erc1271":
+    //     extensionAclFlags.push(
+    //       entryERC1271({ address: undefined }, parsedAclFlags).flags
+    //     );
+    //     break;
+    //   case "erc1271":
+    //     extensionAclFlags.push(
+    //       entryExecutor({ address: undefined }, parsedAclFlags).flags
+    //     );
+    //     break;
+    //   default:
+    //     throw Error(`ACL flag not supported for extension: ${ext.name}`);
+    // }
   }
   return { extensionAddresses, extensionAclFlags };
 };
-
-module.exports = { submitManagingProposal, processManagingProposal };

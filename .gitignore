@@ -4,4 +4,5 @@ contracts.js
 node_modules/
 build/
 cache/
+lib/
 *.tgz

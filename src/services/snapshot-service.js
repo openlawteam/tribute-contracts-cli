@@ -1,4 +1,4 @@
-const {
+import {
   buildProposalMessage,
   buildVoteMessage,
   prepareProposalMessage,
@@ -8,12 +8,12 @@ const {
   getVotes,
   getProposals,
   SnapshotType,
-} = require("@openlaw/snapshot-js-erc712");
+} from "@openlaw/snapshot-js-erc712";
 
-const { configs } = require("../../cli-config");
-const { error } = require("../utils/logging");
-const { getDAOConfig } = require("../contracts/core/dao-registry");
-const { SignerV4 } = require("../utils/signer");
+import { configs } from "../../cli-config.js";
+import { error } from "../utils/logging.js";
+import { getDAOConfig } from "../contracts/core/dao-registry.js";
+import { SignerV4 } from "../utils/signer.js";
 
 const ContractDAOConfigKeys = {
   offchainVotingGracePeriod: "offchainvoting.gracePeriod",
@@ -176,7 +176,7 @@ const signAndSendVote = async (vote, provider, wallet) => {
   };
 };
 
-const submitSnapshotProposal = (
+export const submitSnapshotProposal = (
   title,
   description,
   actionId,
@@ -209,7 +209,7 @@ const submitSnapshotProposal = (
   });
 };
 
-const submitSnapshotVote = (
+export const submitSnapshotVote = (
   snapshotProposalId,
   daoProposalId,
   choice,
@@ -244,7 +244,7 @@ const submitSnapshotVote = (
   });
 };
 
-const getSnapshotProposal = (snapshotProposalId, space) => {
+export const getSnapshotProposal = (snapshotProposalId, space) => {
   return getProposals(configs.snapshotHubApi, space, snapshotProposalId)
     .then((res) => {
       const proposals = res.data;
@@ -262,7 +262,7 @@ const getSnapshotProposal = (snapshotProposalId, space) => {
     });
 };
 
-const getSnapshotVotes = (snapshotProposalId, space) => {
+export const getSnapshotVotes = (snapshotProposalId, space) => {
   return getVotes(configs.snapshotHubApi, space, snapshotProposalId).catch(
     (err) => {
       const resp = err.response;
@@ -272,11 +272,4 @@ const getSnapshotVotes = (snapshotProposalId, space) => {
       throw err;
     }
   );
-};
-
-module.exports = {
-  submitSnapshotProposal,
-  submitSnapshotVote,
-  getSnapshotProposal,
-  getSnapshotVotes,
 };

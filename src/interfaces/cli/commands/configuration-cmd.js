@@ -1,18 +1,18 @@
-const { configs } = require("../../../../cli-config");
-const {
+import { configs } from "../../../../cli-config.js";
+import {
   success,
   notice,
   info,
   logEnvConfigs,
   error,
-} = require("../../../utils/logging");
-const { sha3 } = require("tribute-contracts/utils/ContractUtil");
-const {
+} from "../../../utils/logging.js";
+import { sha3 } from "tribute-contracts/utils/contract-util.js";
+import {
   submitConfigurationProposal,
   processConfigurationProposal,
-} = require("../../../contracts/adapters/configuration-adapter");
+} from "../../../contracts/adapters/configuration-adapter.js";
 
-const configurationCommands = (program) => {
+export const configurationCommands = (program) => {
   program
     .command("config-proposal <key> <value>")
     .description("Submit a new Configuration proposal.")
@@ -49,5 +49,3 @@ const configurationCommands = (program) => {
 
   return program;
 };
-
-module.exports = { configurationCommands };

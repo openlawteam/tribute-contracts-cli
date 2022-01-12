@@ -1,27 +1,26 @@
-const inquirer = require("inquirer");
+import inquirer from "inquirer";
 
-const {
+import {
   submitManagingProposal,
   processManagingProposal,
-} = require("../../../contracts/adapters/managing-adapter");
-
-const { configs } = require("../../../../cli-config");
-const {
+} from "../../../contracts/adapters/managing-adapter.js";
+import {
+  success,
+  notice,
+  info,
+  logEnvConfigs,
+  error,
+} from "../../../utils/logging.js";
+import { configs } from "../../../../cli-config.js";
+import { sha3 } from "tribute-contracts/utils/contract-util.js";
+import {
   daoAccessFlags,
   bankExtensionAclFlags,
   erc721ExtensionAclFlags,
   erc1155ExtensionAclFlags,
   erc1271ExtensionAclFlags,
   executorExtensionAclFlags,
-} = require("tribute-contracts/utils/aclFlags");
-const {
-  success,
-  notice,
-  info,
-  logEnvConfigs,
-  error,
-} = require("../../../utils/logging");
-const { sha3 } = require("tribute-contracts/utils/ContractUtil");
+} from "tribute-contracts/utils/access-control-util.js";
 
 // TODO: ideally we should fetch only the extensions that are available in the DAO,
 // but for now it fine to declared all of them here, because the submission will fail
@@ -60,7 +59,7 @@ const daoExtensions = [
   },
 ];
 
-const managingCommands = (program) => {
+export const managingCommands = (program) => {
   program
     .command("managing-proposal <adapterId> <adapterAddress> [keys] [values]")
     .description("Submit a new managing proposal.")
@@ -181,5 +180,3 @@ const managingCommands = (program) => {
 
   return program;
 };
-
-module.exports = { managingCommands };

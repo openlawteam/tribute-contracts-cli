@@ -1,13 +1,13 @@
-const inquirer = require("inquirer");
-const {
+import inquirer from "inquirer";
+import {
   getOwner,
   getArtifactAddress,
   addArtifact,
-} = require("../../../contracts/utils/dao-artifacts");
+} from "../../../contracts/core/dao-artifacts.js";
 
-const { success, notice, info, error } = require("../../../utils/logging");
+import { success, notice, info, error } from "../../../utils/logging.js";
 
-const daoArtifactsCommands = (program) => {
+export const daoArtifactsCommands = (program) => {
   const getArtifactType = async () => {
     return await inquirer.prompt([
       {

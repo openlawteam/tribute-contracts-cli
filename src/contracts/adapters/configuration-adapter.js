@@ -1,14 +1,14 @@
-const Web3 = require("web3");
-const { ethers } = require("ethers");
-const { configs } = require("../../../cli-config");
-const { sha3, toBN } = require("tribute-contracts/utils/ContractUtil");
-const { prepareVoteProposalData } = require("@openlaw/snapshot-js-erc712");
-const { getContract } = require("../../utils/contract");
-const { submitSnapshotProposal } = require("../../services/snapshot-service");
-const { warn } = require("../../utils/logging");
-const { getAdapterAddress } = require("../core/dao-registry");
+import Web3 from "web3";
+import { ethers } from "ethers";
+import { configs } from "../../../cli-config.js";
+import { sha3, toBN } from "tribute-contracts/utils/contract-util.js";
+import { prepareVoteProposalData } from "@openlaw/snapshot-js-erc712";
+import { getContract } from "../../utils/contract.js";
+import { submitSnapshotProposal } from "../../services/snapshot-service.js";
+import { warn } from "../../utils/logging.js";
+import { getAdapterAddress } from "../core/dao-registry.js";
 
-const submitConfigurationProposal = async (key, value, opts) => {
+export const submitConfigurationProposal = async (key, value, opts) => {
   const configurationContractAddress = await getAdapterAddress("configuration");
 
   const { contract, provider, wallet } = getContract(
@@ -57,7 +57,7 @@ const submitConfigurationProposal = async (key, value, opts) => {
   });
 };
 
-const processConfigurationProposal = async (daoProposalId) => {
+export const processConfigurationProposal = async (daoProposalId) => {
   const configurationContractAddress = await getAdapterAddress("configuration");
 
   const { contract, wallet } = getContract(
@@ -71,5 +71,3 @@ const processConfigurationProposal = async (daoProposalId) => {
 
   return { daoProposalId };
 };
-
-module.exports = { processConfigurationProposal, submitConfigurationProposal };

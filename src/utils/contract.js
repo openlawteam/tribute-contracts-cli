@@ -1,16 +1,16 @@
-const hre = require("hardhat");
-const { ethers } = require("ethers");
-const { configs } = require("../../cli-config");
-const { getNetworkDetails } = require("tribute-contracts/utils/DeploymentUtil");
+import hre from "hardhat";
+import { ethers } from "ethers";
+import { configs } from "../../cli-config.js";
+import { getNetworkDetails } from "tribute-contracts/utils/deployment-util.js";
 
-const openWallet = (provider) => {
+export const openWallet = (provider) => {
   // The Wallet class inherits Signer and can sign transactions
   // and messages using a private key as a standard Externally Owned Account (EOA).
   const wallet = ethers.Wallet.fromMnemonic(configs.mnemonic);
   return wallet.connect(provider);
 };
 
-const getProvider = (network) => {
+export const getProvider = (network) => {
   if (!network)
     throw new Error("Unable to get the provider due to invalid network");
 
@@ -43,17 +43,17 @@ const getProvider = (network) => {
   }
 };
 
-const getABI = (contractName) => {
+export const getABI = (contractName) => {
   const artifact = hre.artifacts.readArtifactSync(contractName);
   return artifact.abi;
 };
 
-const attachContract = (address, abi, wallet) => {
+export const attachContract = (address, abi, wallet) => {
   const contract = new ethers.Contract(address, abi, wallet);
   return contract.connect(wallet);
 };
 
-const getContract = (name, contract) => {
+export const getContract = (name, contract) => {
   const provider = getProvider(configs.network);
   const wallet = openWallet(provider);
   return {
@@ -62,5 +62,3 @@ const getContract = (name, contract) => {
     wallet,
   };
 };
-
-module.exports = { attachContract, getContract };
