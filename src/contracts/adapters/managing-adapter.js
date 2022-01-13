@@ -168,14 +168,3 @@ const parseUpdateType = async (value) => {
       throw Error(`Unknown update type: ${value}`);
   }
 };
-
-const parseDaoFlags = (aclFlags) => {
-  return aclFlags
-    .map((f) => f.toUpperCase())
-    .reduce((flags, flag) => {
-      if (daoAccessFlags.includes(flag)) {
-        return { ...flags, [flag]: true };
-      }
-      throw Error(`Invalid DAO Access Flag: ${flag}`);
-    }, {});
-};

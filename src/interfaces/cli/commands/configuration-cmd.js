@@ -16,18 +16,19 @@ import {
 
 export const configurationCommands = (program) => {
   program
-    .command("config-proposal <key> <value>")
+    .command("config-proposal")
     .description("Submit a new Configuration proposal.")
-    .action(async (key, value) => {
+    .action(async () => {
       notice(`\n::: Submitting Configuration proposal...\n`);
-      //TODO input multiple configs using .collectConfigs function
+
+      const configurations = await collectConfigs([]);
+
       return submitConfigurationProposal({
-        configurations: { key, value },
-        opts: program.opts(),
+        configurations,
       })
         .then((res) => {
           success(`New Snapshot Proposal Id: ${res.snapshotProposalId}\n`);
-          success(`\n::: Configuration proposal submitted!\n`);
+          success(`\n::: Configuration proposal submitted!\n`, true);
         })
         .catch((err) =>
           error("Error while processing configuration proposal", err)
@@ -47,7 +48,7 @@ export const configurationCommands = (program) => {
 
       return processConfigurationProposal({ daoProposalId })
         .then((res) => {
-          success(`\n::: Processed Configuration proposal\n`);
+          success(`\n::: Processed Configuration proposal\n`, true);
         })
         .catch((err) =>
           error("Error while processing configuration proposal", err)

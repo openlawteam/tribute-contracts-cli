@@ -1,27 +1,37 @@
 import Web3 from "web3";
 import { ethers } from "ethers";
 import { prepareVoteProposalData } from "@openlaw/snapshot-js-erc712";
+import { adaptersIdsMap } from "tribute-contracts/utils/dao-ids-util";
 import { sha3, ZERO_ADDRESS } from "tribute-contracts/utils/contract-util.js";
 import { configs } from "../../../cli-config.js";
 import { getAdapter } from "../../utils/contract.js";
 import { submitSnapshotProposal } from "../../services/snapshot-service.js";
 import { warn } from "../../utils/logging.js";
-import { checkSenderAddress } from "./offchain-voting-adapter.js";
+import {
+  checkSenderAddress,
+  isProposalReadyToBeProcessed,
+} from "./offchain-voting-adapter.js";
+
+const CONTRACT_NAME = "ConfigurationContract";
 
 export const submitConfigurationProposal = async ({ configurations }) => {
+  const daoConfigurations = configurations ? parseConfigs(configurations) : [];
+  if (daoConfigurations.length === 0)
+    throw Error("You need to provide at least 1 dao configuration");
+
   const {
     contract: configAdapter,
     provider,
     wallet,
-  } = await getAdapter("ConfigurationContract");
+  } = await getAdapter(adaptersIdsMap.CONFIGURATION_ADAPTER, CONTRACT_NAME);
 
-  return await submitSnapshotProposal(
-    `Key: ${key} -> ${value}`,
-    "Creates/Update configuration",
-    configAdapter.address,
+  return await submitSnapshotProposal({
+    title: `DAO Configuration`,
+    description: "Add/update dao configuration",
+    actionId: configAdapter.address,
     provider,
-    wallet
-  ).then(async (res) => {
+    wallet,
+  }).then(async (res) => {
     const data = res.data;
     const snapshotProposalId = res.uniqueId;
     const daoProposalId = sha3(snapshotProposalId);
@@ -53,8 +63,7 @@ export const submitConfigurationProposal = async ({ configurations }) => {
     await configAdapter.submitProposal(
       configs.dao,
       daoProposalId,
-      [sha3(configurations.key)],
-      [configurations.value],
+      [...daoConfigurations],
       encodedData,
       { from: wallet.address }
     );
@@ -63,8 +72,11 @@ export const submitConfigurationProposal = async ({ configurations }) => {
 };
 
 export const processConfigurationProposal = async ({ daoProposalId }) => {
+  await isProposalReadyToBeProcessed({ daoProposalId });
+
   const { contract: configAdapter, wallet } = await getAdapter(
-    "ConfigurationContract"
+    adaptersIdsMap.CONFIGURATION_ADAPTER,
+    CONTRACT_NAME
   );
 
   await configAdapter.processProposal(configs.dao, daoProposalId, {
