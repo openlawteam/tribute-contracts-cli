@@ -2,39 +2,50 @@ import { ethers } from "ethers";
 import { sha3 } from "tribute-contracts/utils/contract-util.js";
 import { getContract } from "../../utils/contract.js";
 
-export const getOwner = async (daoArtifactsAddress) => {
-  const { contract } = getContract("DaoArtifacts", daoArtifactsAddress);
-  return await contract.owner();
+const CONTRACT_NAME = "DaoArtifacts";
+
+export const getOwner = async ({ daoArtifactsAddress }) => {
+  const { contract: daoArtifacts } = getContract(
+    CONTRACT_NAME,
+    daoArtifactsAddress
+  );
+  return await daoArtifacts.owner();
 };
 
-export const addArtifact = async (
+export const addArtifact = async ({
   id,
   version,
   address,
-  type,
-  daoArtifactsAddress
-) => {
-  const { contract } = getContract("DaoArtifacts", daoArtifactsAddress);
-  return await contract.addArtifact(
+  artifactType,
+  daoArtifactsAddress,
+}) => {
+  const { contract: daoArtifacts } = getContract(
+    CONTRACT_NAME,
+    daoArtifactsAddress
+  );
+  return await daoArtifacts.addArtifact(
     sha3(id),
     ethers.utils.formatBytes32String(version),
     address,
-    type
+    ethers.BigNumber.from(artifactType)
   );
 };
 
-export const getArtifactAddress = async (
+export const getArtifactAddress = async ({
   id,
   owner,
   version,
-  type,
-  daoArtifactsAddress
-) => {
-  const { contract } = getContract("DaoArtifacts", daoArtifactsAddress);
-  return await contract.getArtifactAddress(
+  artifactType,
+  daoArtifactsAddress,
+}) => {
+  const { contract: daoArtifacts } = getContract(
+    CONTRACT_NAME,
+    daoArtifactsAddress
+  );
+  return await daoArtifacts.getArtifactAddress(
     sha3(id),
     owner,
     ethers.utils.formatBytes32String(version),
-    type
+    artifactType
   );
 };
