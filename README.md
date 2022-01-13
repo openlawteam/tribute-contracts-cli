@@ -8,10 +8,15 @@ In the root folder of the project, create the `.env` file, and set the env vars:
   ##
   # The DAO Address to interact with
   DAO_ADDRESS=0x...
+  
+  ##
+  # Infura API KEY or Alchemy API KEY. Pick one.
+  INFURA_KEY=
+  ALCHEMY_KEY=
 
   ##
-  # The mnemonic to open your wallet and sign transactions
-  MNEMONIC=...
+  # 12 word seed phrase from your wallet or the account private key
+  MNEMONIC_OR_PRIVATE_KEY=...
 
   ##
   # The snapshot-hub URL to connect
