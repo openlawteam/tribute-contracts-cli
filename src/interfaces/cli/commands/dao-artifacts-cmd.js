@@ -1,54 +1,21 @@
-const inquirer = require("inquirer");
-const {
+import inquirer from "inquirer";
+import {
   getOwner,
   getArtifactAddress,
   addArtifact,
-} = require("../../../contracts/utils/dao-artifacts");
+} from "../../../contracts/core/dao-artifacts.js";
 
-const { success, notice, info, error } = require("../../../utils/logging");
+import { success, notice, info, error } from "../../../utils/logging.js";
 
-const daoArtifactsCommands = (program) => {
-  const getArtifactType = async () => {
-    return await inquirer.prompt([
-      {
-        type: "list",
-        message: "Which type of contract artifact do you want to add?",
-        name: "artifactType",
-        loop: false,
-        choices: [
-          {
-            name: "Core",
-            value: 0,
-          },
-          {
-            name: "Factory",
-            value: 1,
-          },
-          {
-            name: "Extension",
-            value: 2,
-          },
-          {
-            name: "Adapter",
-            value: 3,
-          },
-          {
-            name: "Util",
-            value: 4,
-          },
-        ],
-      },
-    ]);
-  };
-
+export const daoArtifactsCommands = (program) => {
   program
-    .command("dao-artifacts-owner <daoArtifactsAddr>")
-    .description("Gets the adapter address if configured in the DAO.")
-    .action((daoArtifactsAddr) => {
+    .command("get-artifacts-owner <daoArtifactsAddress>")
+    .description("Gets the owner of the DaoArtifacts contract.")
+    .action((daoArtifactsAddress) => {
       notice(`\n ::: Get DaoArtifacts owner address...\n`);
-      info(`DaoArtifacts:\t\t${daoArtifactsAddr}`);
+      info(`DaoArtifacts:\t\t${daoArtifactsAddress}`);
 
-      return getOwner(daoArtifactsAddr)
+      return getOwner({ daoArtifactsAddress })
         .then((data) => {
           success(`Owner Address: \t\t${data}\n`);
         })
@@ -56,38 +23,44 @@ const daoArtifactsCommands = (program) => {
     });
 
   program
-    .command("dao-artifacts-add <daoArtifactsAddr> <id> <version> <address>")
+    .command("add-artifact <daoArtifactsAddress> <id> <version> <address>")
     .description("Adds the artifact to the DaoArtifacts contract.")
-    .action(async (daoArtifactsAddr, id, version, address) => {
+    .action(async (daoArtifactsAddress, id, version, address) => {
       notice(`\n ::: Adding an artifact to DaoArtifacts...\n`);
 
       const { artifactType } = await getArtifactType();
 
-      info(`DaoArtifacts:\t\t${daoArtifactsAddr}`);
+      info(`DaoArtifacts:\t\t${daoArtifactsAddress}`);
 
-      return addArtifact(id, version, address, artifactType, daoArtifactsAddr)
-        .then(() => success(`New Artifact Added: \t\t${address}\n`))
+      return addArtifact({
+        id,
+        version,
+        address,
+        artifactType,
+        daoArtifactsAddress,
+      })
+        .then(() => success(`New Artifact Added: \t${address}\n`))
         .catch((err) => error("Error while adding new artifact", err));
     });
 
   program
-    .command("dao-artifacts-get <daoArtifactsAddr> <id> <owner> <version>")
+    .command("get-artifact <daoArtifactsAddress> <owner> <id> <version>")
     .description(
       "Gets the artifact address if present in the DaoArtifacts contract."
     )
-    .action(async (daoArtifactsAddr, id, version, owner) => {
+    .action(async (daoArtifactsAddress, owner, id, version) => {
       notice(`\n ::: Get artifact address...\n`);
       const { artifactType } = await getArtifactType();
 
-      info(`DaoArtifacts:\t\t${daoArtifactsAddr}`);
+      info(`DaoArtifacts:\t\t${daoArtifactsAddress}`);
 
-      return getArtifactAddress(
+      return getArtifactAddress({
         id,
         owner,
         version,
         artifactType,
-        daoArtifactsAddr
-      )
+        daoArtifactsAddress,
+      })
         .then((artifactAddress) =>
           success(`Artifact Address: \t${artifactAddress}\n`)
         )
@@ -95,6 +68,39 @@ const daoArtifactsCommands = (program) => {
     });
 
   return program;
+};
+
+const getArtifactType = async () => {
+  return await inquirer.prompt([
+    {
+      type: "list",
+      message: "Which type of contract artifact do you want to add?",
+      name: "artifactType",
+      loop: false,
+      choices: [
+        {
+          name: "Core",
+          value: 0,
+        },
+        {
+          name: "Factory",
+          value: 1,
+        },
+        {
+          name: "Extension",
+          value: 2,
+        },
+        {
+          name: "Adapter",
+          value: 3,
+        },
+        {
+          name: "Util",
+          value: 4,
+        },
+      ],
+    },
+  ]);
 };
 
 module.exports = { daoArtifactsCommands };

@@ -1,6 +1,4 @@
-require("dotenv").config({ path: ".env" });
-
-const { configs } = require("./cli-config");
+const { configs } = require("./cli-config.js");
 
 module.exports = {
   defaultNetwork: "ganache",
@@ -11,7 +9,7 @@ module.exports = {
       accounts: {
         count: 10,
         initialIndex: 0,
-        mnemonic: configs.mnemonic,
+        mnemonic: configs.mnemonicOrPrivateKey,
         path: "m/44'/60'/0'/0",
       },
     },
@@ -29,7 +27,7 @@ module.exports = {
     },
   },
   solidity: {
-    version: "0.8.0",
+    version: "0.8.9",
     settings: {
       optimizer: {
         enabled: true,

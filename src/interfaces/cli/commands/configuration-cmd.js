@@ -1,32 +1,40 @@
-const { configs } = require("../../../../cli-config");
-const {
+import inquirer from "inquirer";
+import { ethers } from "ethers";
+import { configs } from "../../../../cli-config.js";
+import {
   success,
   notice,
   info,
   logEnvConfigs,
   error,
-} = require("../../../utils/logging");
-const { sha3 } = require("tribute-contracts/utils/ContractUtil");
-const {
+} from "../../../utils/logging.js";
+import { sha3 } from "tribute-contracts/utils/contract-util.js";
+import {
   submitConfigurationProposal,
   processConfigurationProposal,
-} = require("../../../contracts/adapters/configuration-adapter");
+} from "../../../contracts/adapters/configuration-adapter.js";
 
-const configurationCommands = (program) => {
+export const configurationCommands = (program) => {
   program
-    .command("config-proposal <key> <value>")
+    .command("config-proposal")
     .description("Submit a new Configuration proposal.")
-    .action(async (key, value) => {
+    .action(async () => {
       notice(`\n::: Submitting Configuration proposal...\n`);
-      return submitConfigurationProposal(key, value, program.opts())
+
+      const configurations = await collectConfigs([]);
+
+      return submitConfigurationProposal({
+        configurations,
+      })
         .then((res) => {
           success(`New Snapshot Proposal Id: ${res.snapshotProposalId}\n`);
-          success(`\n::: Configuration proposal submitted!\n`);
+          success(`\n::: Configuration proposal submitted!\n`, true);
         })
         .catch((err) =>
           error("Error while processing configuration proposal", err)
         );
     });
+
   program
     .command("config-process <snapshotProposalId>")
     .description("Process an existing configuration proposal.")
@@ -38,9 +46,9 @@ const configurationCommands = (program) => {
       info(`Snapshot Proposal Id:\t${snapshotProposalId}`);
       info(`DAO Proposal Id:\t${daoProposalId}`);
 
-      return processConfigurationProposal(daoProposalId)
+      return processConfigurationProposal({ daoProposalId })
         .then((res) => {
-          success(`\n::: Processed Configuration proposal\n`);
+          success(`\n::: Processed Configuration proposal\n`, true);
         })
         .catch((err) =>
           error("Error while processing configuration proposal", err)
@@ -50,4 +58,48 @@ const configurationCommands = (program) => {
   return program;
 };
 
-module.exports = { configurationCommands };
+export const collectConfigs = async (inputs = []) => {
+  const prompts = [
+    {
+      type: "input",
+      name: "configKey",
+      message: `Type the configuration name:`,
+    },
+    {
+      type: "list",
+      name: "configType",
+      message: `Which type of configuration do you want to update?`,
+      choices: ["Numeric", "Address"],
+    },
+    {
+      type: "input",
+      name: "configValue",
+      message: (answers) =>
+        `Type the ${answers.configType} configuration value:`,
+      validate: (input, answers) => {
+        switch (answers.configType) {
+          case "Numeric": {
+            if (ethers.BigNumber.from(input)) return true;
+            return "Not a number";
+          }
+          case "Address": {
+            if (ethers.utils.isAddress(input)) return true;
+            return "Not an ethereum address";
+          }
+          default:
+            return "Invalid config value";
+        }
+      },
+    },
+    {
+      type: "confirm",
+      name: "repeat",
+      message: "Enter another config? ",
+      default: false,
+    },
+  ];
+
+  const { repeat, ...answers } = await inquirer.prompt(prompts);
+  const newInputs = [...inputs, answers];
+  return repeat ? collectConfigs(newInputs) : newInputs;
+};

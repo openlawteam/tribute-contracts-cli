@@ -1,21 +1,21 @@
-const { configs } = require("../../../../cli-config");
-const {
+import { configs } from "../../../../cli-config.js";
+import {
   getAdapterAddress,
   getExtensionAddress,
   getDAOConfig,
   getDAOConfigAddress,
-} = require("../../../contracts/core/dao-registry");
-const {
+} from "../../../contracts/core/dao-registry.js";
+import {
   success,
   notice,
   info,
   logEnvConfigs,
   error,
-} = require("../../../utils/logging");
+} from "../../../utils/logging.js";
 
-const daoRegistryCommands = (program) => {
+export const daoRegistryCommands = (program) => {
   program
-    .command("get-adapter-addr <adapterId>")
+    .command("get-adapter <adapterId>")
     .description("Gets the adapter address if configured in the DAO.")
     .action((adapterId) => {
       notice(`\n ::: Get adapter address...\n`);
@@ -30,7 +30,7 @@ const daoRegistryCommands = (program) => {
     });
 
   program
-    .command("get-extension-addr <extensionId>")
+    .command("get-extension <extensionId>")
     .description("Gets the extension address if configured in the DAO.")
     .action((extensionId) => {
       notice(`\n ::: Get extension address...\n`);
@@ -78,5 +78,3 @@ const daoRegistryCommands = (program) => {
 
   return program;
 };
-
-module.exports = { daoRegistryCommands };

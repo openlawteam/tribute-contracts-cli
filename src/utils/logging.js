@@ -1,30 +1,32 @@
-const chalk = require("chalk");
+import chalk from "chalk";
 
-const info = (msg) => {
+export const info = (msg) => {
   console.log(chalk.white(msg));
 };
 
-const warn = (msg) => {
+export const warn = (msg) => {
   console.log(chalk.yellow(msg));
 };
 
-const success = (msg) => {
-  console.log(chalk.greenBright(msg));
+export const success = (msg, showDateTime = false) => {
+  console.log(
+    chalk.greenBright(
+      `${msg}${showDateTime ? " \n" + new Date().toLocaleString() : ""}`
+    )
+  );
 };
 
-const notice = (msg) => {
+export const notice = (msg) => {
   console.log(chalk.green(msg));
 };
 
-const error = (msg, err) => {
+export const error = (msg, err) => {
   console.log(chalk.red(msg), err);
 };
 
-const logEnvConfigs = (configs, contract) => {
+export const logEnvConfigs = (configs, contract) => {
   info(`Network:\t\t${configs.network}`);
   info(`DAO:\t\t\t${configs.dao}`);
   info(`Space:\t\t\t${configs.space}`);
   if (contract) info(`Contract:\t\t${contract}`);
 };
-
-module.exports = { warn, success, notice, error, info, logEnvConfigs };

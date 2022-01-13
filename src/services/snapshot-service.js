@@ -1,4 +1,4 @@
-const {
+import {
   buildProposalMessage,
   buildVoteMessage,
   prepareProposalMessage,
@@ -8,12 +8,12 @@ const {
   getVotes,
   getProposals,
   SnapshotType,
-} = require("@openlaw/snapshot-js-erc712");
+} from "@openlaw/snapshot-js-erc712";
 
-const { configs } = require("../../cli-config");
-const { error } = require("../utils/logging");
-const { getDAOConfig } = require("../contracts/core/dao-registry");
-const { SignerV4 } = require("../utils/signer");
+import { configs } from "../../cli-config.js";
+import { error } from "../utils/logging.js";
+import { getDAOConfig } from "../contracts/core/dao-registry.js";
+import { SignerV4 } from "../utils/signer.js";
 
 const ContractDAOConfigKeys = {
   offchainVotingGracePeriod: "offchainvoting.gracePeriod",
@@ -28,12 +28,110 @@ const ContractDAOConfigKeys = {
   votingVotingPeriod: "voting.votingPeriod",
 };
 
-const buildProposalMessageHelper = async (
+export const submitSnapshotProposal = ({
+  title,
+  description,
+  actionId,
+  provider,
+  wallet,
+}) => {
+  return signAndSendProposal({
+    proposal: {
+      partialProposalData: {
+        name: title,
+        body: description,
+        metadata: {
+          type: "Governance",
+        },
+      },
+      type: SnapshotType.proposal,
+      space: configs.space,
+      actionId,
+      network: configs.network,
+      dao: configs.dao,
+    },
+    provider,
+    wallet,
+  }).catch((err) => {
+    const resp = err.response;
+    if (resp && resp.data && resp.data.error_description) {
+      error(`Error: ${resp.data.error_description}`);
+    }
+    throw err;
+  });
+};
+
+export const submitSnapshotVote = ({
+  snapshotProposalId,
+  daoProposalId,
+  choice,
+  network,
+  dao,
+  space,
+  actionId,
+  provider,
+  wallet,
+}) => {
+  return signAndSendVote({
+    vote: {
+      partialVoteData: {
+        choice: choice,
+        daoProposalId,
+        snapshotProposalId,
+      },
+      type: SnapshotType.vote,
+      space,
+      actionId,
+      network,
+      dao,
+    },
+    provider,
+    wallet,
+  }).catch((err) => {
+    const resp = err.response;
+    if (resp && resp.data && resp.data.error_description) {
+      error(`Error: ${resp.data.error_description}`, err);
+    }
+    throw err;
+  });
+};
+
+export const getSnapshotProposal = ({ snapshotProposalId, space }) => {
+  return getProposals(configs.snapshotHubApi, space, snapshotProposalId)
+    .then((res) => {
+      const proposals = res.data;
+      if (proposals && proposals[snapshotProposalId]) {
+        return proposals[snapshotProposalId];
+      }
+      throw Error("Proposal not found in Snapshot Hub");
+    })
+    .catch((err) => {
+      const resp = err.response;
+      if (resp && resp.data && resp.data.error_description) {
+        error(`Error: ${resp.data.error_description}`, err);
+      }
+      throw err;
+    });
+};
+
+export const getSnapshotVotes = ({ snapshotProposalId, space }) => {
+  return getVotes(configs.snapshotHubApi, space, snapshotProposalId).catch(
+    (err) => {
+      const resp = err.response;
+      if (resp && resp.data && resp.data.error_description) {
+        error(`Error: ${resp.data.error_description}`, err);
+      }
+      throw err;
+    }
+  );
+};
+
+const buildProposalMessageHelper = async ({
   commonData,
   network,
   daoRegistry,
-  provider
-) => {
+  provider,
+}) => {
   const snapshot = await provider.getBlockNumber();
 
   const votingTimeSeconds = parseInt(
@@ -54,7 +152,7 @@ const buildProposalMessageHelper = async (
   );
 };
 
-const signAndSendProposal = async (proposal, provider, wallet) => {
+const signAndSendProposal = async ({ proposal, provider, wallet }) => {
   const { partialProposalData, actionId, space, dao, network } = proposal;
 
   // When using ganache, the getNetwork call always returns UNKNOWN, so we ignore that.
@@ -64,24 +162,20 @@ const signAndSendProposal = async (proposal, provider, wallet) => {
 
   const { data } = await getSpace(configs.snapshotHubApi, space);
 
-  const commonData = {
-    name,
-    body,
-    metadata,
-    token: data.token,
-    space,
-  };
-
   // 1. Check proposal type and prepare appropriate message
-  const message = await buildProposalMessageHelper(
-    {
-      ...commonData,
+  const message = await buildProposalMessageHelper({
+    commonData: {
+      name,
+      body,
+      metadata,
+      token: data.token,
+      space,
       timestamp,
     },
     network,
-    dao,
-    provider
-  );
+    daoRegistry: dao,
+    provider,
+  });
 
   // 2. Sign data
   const signature = SignerV4(wallet.privateKey)(
@@ -113,7 +207,7 @@ const signAndSendProposal = async (proposal, provider, wallet) => {
   };
 };
 
-const signAndSendVote = async (vote, provider, wallet) => {
+const signAndSendVote = async ({ vote, provider, wallet }) => {
   const { partialVoteData, type, space, actionId } = vote;
 
   const { chainId } = await provider.getNetwork();
@@ -174,109 +268,4 @@ const signAndSendVote = async (vote, provider, wallet) => {
     sig: signature,
     uniqueId: resp.data.uniqueId,
   };
-};
-
-const submitSnapshotProposal = (
-  title,
-  description,
-  actionId,
-  provider,
-  wallet
-) => {
-  return signAndSendProposal(
-    {
-      partialProposalData: {
-        name: title,
-        body: description,
-        metadata: {
-          type: "Governance",
-        },
-      },
-      type: SnapshotType.proposal,
-      space: configs.space,
-      actionId,
-      network: configs.network,
-      dao: configs.dao,
-    },
-    provider,
-    wallet
-  ).catch((err) => {
-    const resp = err.response;
-    if (resp && resp.data && resp.data.error_description) {
-      error(`Error: ${resp.data.error_description}`);
-    }
-    throw err;
-  });
-};
-
-const submitSnapshotVote = (
-  snapshotProposalId,
-  daoProposalId,
-  choice,
-  network,
-  dao,
-  space,
-  actionId,
-  provider,
-  wallet
-) => {
-  return signAndSendVote(
-    {
-      partialVoteData: {
-        choice: choice,
-        daoProposalId,
-        snapshotProposalId,
-      },
-      type: SnapshotType.vote,
-      space,
-      actionId,
-      network,
-      dao,
-    },
-    provider,
-    wallet
-  ).catch((err) => {
-    const resp = err.response;
-    if (resp && resp.data && resp.data.error_description) {
-      error(`Error: ${resp.data.error_description}`, err);
-    }
-    throw err;
-  });
-};
-
-const getSnapshotProposal = (snapshotProposalId, space) => {
-  return getProposals(configs.snapshotHubApi, space, snapshotProposalId)
-    .then((res) => {
-      const proposals = res.data;
-      if (proposals && proposals[snapshotProposalId]) {
-        return proposals[snapshotProposalId];
-      }
-      throw Error("Proposal not found in Snapshot Hub");
-    })
-    .catch((err) => {
-      const resp = err.response;
-      if (resp && resp.data && resp.data.error_description) {
-        error(`Error: ${resp.data.error_description}`, err);
-      }
-      throw err;
-    });
-};
-
-const getSnapshotVotes = (snapshotProposalId, space) => {
-  return getVotes(configs.snapshotHubApi, space, snapshotProposalId).catch(
-    (err) => {
-      const resp = err.response;
-      if (resp && resp.data && resp.data.error_description) {
-        error(`Error: ${resp.data.error_description}`, err);
-      }
-      throw err;
-    }
-  );
-};
-
-module.exports = {
-  submitSnapshotProposal,
-  submitSnapshotVote,
-  getSnapshotProposal,
-  getSnapshotVotes,
 };

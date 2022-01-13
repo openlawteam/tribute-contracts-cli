@@ -1,69 +1,90 @@
-const { configs } = require("../../../cli-config");
-const {
+import {
   UNITS,
   TOTAL,
   MEMBER_COUNT,
-} = require("tribute-contracts/utils/ContractUtil");
-const {
+} from "tribute-contracts/utils/contract-util.js";
+import { adaptersIdsMap } from "tribute-contracts/utils/dao-ids-util.js";
+import {
   VoteChoicesIndex,
   prepareVoteResult,
   createVote,
   getOffchainVotingProof,
   submitOffchainVotingProof,
-} = require("@openlaw/snapshot-js-erc712");
-const { getContract } = require("../../utils/contract");
-const { normalizeString } = require("../../utils/string");
-const { numberRangeArray } = require("../../utils/array");
-const {
+} from "@openlaw/snapshot-js-erc712";
+
+import { getAdapter } from "../../utils/contract.js";
+import { normalizeString } from "../../utils/string.js";
+import { numberRangeArray } from "../../utils/array.js";
+import { configs } from "../../../cli-config.js";
+import {
   submitSnapshotVote,
   getSnapshotVotes,
   getSnapshotProposal,
-} = require("../../services/snapshot-service");
-const { warn } = require("../../utils/logging");
-const { getPriorAmount } = require("../extensions/bank-extension");
-const { SignerV4 } = require("../../utils/signer");
-const { getMemberAddress, getAdapterAddress } = require("../core/dao-registry");
+} from "../../services/snapshot-service.js";
+import { warn } from "../../utils/logging.js";
+import { getPriorAmount } from "../extensions/bank-extension.js";
+import { SignerV4 } from "../../utils/signer.js";
+import { getMemberAddress, getAdapter } from "../core/dao-registry.js";
 
-const BadNodeError = {
+const CONTRACT_NAME = "OffchainVotingContract";
+
+export const BadNodeError = {
   0: "OK",
   1: "WRONG_PROPOSAL_ID",
   2: "INVALID_CHOICE",
   3: "AFTER_VOTING_PERIOD",
   4: "BAD_SIGNATURE",
+  5: "INDEX_OUT_OF_BOUND",
+  6: "VOTE_NOT_ALLOWED",
 };
 
-const newOffchainVote = async (snapshotProposalId, daoProposalId, choice) => {
-  const offchainContractAddress = await getAdapterAddress("voting");
-  const { provider, wallet } = getContract(
-    "OffchainVotingContract",
-    offchainContractAddress
+const VotingState = {
+  0: "NOT_STARTED",
+  1: "TIE",
+  2: "PASS",
+  3: "NOT_PASS",
+  4: "IN_PROGRESS",
+  5: "GRACE_PERIOD",
+};
+
+export const newOffchainVote = async ({
+  snapshotProposalId,
+  daoProposalId,
+  choice,
+}) => {
+  const { provider, wallet } = await getAdapter(
+    adaptersIdsMap.VOTING_ADAPTER,
+    CONTRACT_NAME
   );
 
-  const snapshotProposal = await getSnapshotProposal(
+  const snapshotProposal = await getSnapshotProposal({
     snapshotProposalId,
-    configs.space
-  );
+    space: configs.space,
+  });
 
-  return submitSnapshotVote(
+  return submitSnapshotVote({
     snapshotProposalId,
     daoProposalId,
     choice,
-    configs.network,
-    configs.dao,
-    configs.space,
-    snapshotProposal.actionId,
+    network: configs.network,
+    dao: configs.dao,
+    space: configs.space,
+    actionId: snapshotProposal.actionId,
     provider,
-    wallet
-  ).then(() => {
+    wallet,
+  }).then(() => {
     return { snapshotProposalId, choice, memberAddress: wallet.address };
   });
 };
 
-const submitOffchainResult = async (snapshotProposalId, daoProposalId) => {
-  const snapshotProposal = await getSnapshotProposal(
+export const submitOffchainResult = async ({
+  snapshotProposalId,
+  daoProposalId,
+}) => {
+  const snapshotProposal = await getSnapshotProposal({
     snapshotProposalId,
-    configs.space
-  );
+    space: configs.space,
+  });
 
   const actionId = snapshotProposal.actionId;
   const snapshot = snapshotProposal.msg.payload.snapshot.toString();
@@ -71,7 +92,10 @@ const submitOffchainResult = async (snapshotProposalId, daoProposalId) => {
   if (configs.debug)
     warn(`\n Snapshot Proposal: ${JSON.stringify(snapshotProposal)}`);
 
-  const res = await getSnapshotVotes(snapshotProposalId, configs.space);
+  const res = await getSnapshotVotes({
+    snapshotProposalId,
+    space: configs.space,
+  });
   const snapshotVotes = res.data;
   if (snapshotVotes && snapshotVotes.length === 0)
     throw Error("No votes found");
@@ -118,13 +142,12 @@ const submitOffchainResult = async (snapshotProposalId, daoProposalId) => {
   );
 
   if (configs.debug) warn(`\nVotes: ${JSON.stringify(voteEntries)}`);
-  const offchainContractAddress = await getAdapterAddress("voting");
 
   const {
-    contract: offchainContract,
+    contract: offchainVotingAdapter,
     provider,
     wallet,
-  } = getContract("OffchainVotingContract", offchainContractAddress);
+  } = await getAdapter(adaptersIdsMap.VOTING_ADAPTER, CONTRACT_NAME);
 
   const { chainId } = await provider.getNetwork();
 
@@ -140,7 +163,7 @@ const submitOffchainResult = async (snapshotProposalId, daoProposalId) => {
   const resultNodeLast = result[result.length - 1];
 
   // Validate the vote result node by calling the contract
-  const getBadNodeErrorResponse = await offchainContract.getBadNodeError(
+  const getBadNodeErrorResponse = await offchainVotingAdapter.getBadNodeError(
     configs.dao,
     daoProposalId,
     true, // `submitNewVote`
@@ -195,7 +218,7 @@ const submitOffchainResult = async (snapshotProposalId, daoProposalId) => {
 
   // Send the tx
   const reporter = wallet.address;
-  await offchainContract.submitVoteResult(
+  await offchainVotingAdapter.submitVoteResult(
     configs.dao,
     daoProposalId,
     voteResultTree.getHexRoot(),
@@ -213,4 +236,69 @@ const submitOffchainResult = async (snapshotProposalId, daoProposalId) => {
   };
 };
 
-module.exports = { newOffchainVote, submitOffchainResult };
+export const checkSenderAddress = async ({
+  adapterAddress,
+  encodedData,
+  sender,
+}) => {
+  const { contract: offchainVotingAdapter } = await getAdapter(
+    adaptersIdsMap.VOTING_ADAPTER,
+    CONTRACT_NAME
+  );
+
+  const retrievedSender = await offchainVotingAdapter.getSenderAddress(
+    configs.dao,
+    adapterAddress,
+    encodedData,
+    sender,
+    { from: sender }
+  );
+
+  if (sender !== retrievedSender) {
+    throw Error(
+      `voting.getSenderAddress ${retrievedSender} does not match the actual wallet sender: ${sender}`
+    );
+  }
+};
+
+export const getVoteStatus = async ({ daoProposalId }) => {
+  const { contract: offchainVotingAdapter, wallet } = await getAdapter(
+    adaptersIdsMap.VOTING_ADAPTER,
+    CONTRACT_NAME
+  );
+
+  const votingStatusId = await offchainVotingAdapter.voteResult(
+    configs.dao,
+    daoProposalId,
+    { from: wallet.address }
+  );
+  if (configs.debug) warn(`\nVote status id: ${votingStatusId}`);
+  return VotingState[votingStatusId];
+};
+
+export const isProposalReadyToBeProcessed = async ({ daoProposalId }) => {
+  const { contract: offchainVotingAdapter, wallet } = await getAdapter(
+    adaptersIdsMap.VOTING_ADAPTER,
+    CONTRACT_NAME
+  );
+
+  const votingStateId = await offchainVotingAdapter.voteResult(
+    configs.dao,
+    daoProposalId,
+    { from: wallet.address }
+  );
+  if (configs.debug) warn(`\nVote state id: ${votingStateId}`);
+  switch (votingStateId) {
+    case 2: //"PASS"
+      return Promise.resolve(true);
+    case 0: //"NOT_STARTED",
+    case 1: //"TIE",
+    case 3: //"NOT_PASS",
+    case 4: //"IN_PROGRESS",
+    case 5: //"GRACE_PERIOD",
+    default:
+      return Promise.reject(
+        `Proposal not ready to be processed, state: ${VotingState[votingStateId]}`
+      );
+  }
+};

@@ -1,68 +1,85 @@
-const Web3 = require("web3");
-const { ethers } = require("ethers");
-const toBytes32 = ethers.utils.formatBytes32String;
-const { configs } = require("../../../cli-config");
-const { sha3 } = require("tribute-contracts/utils/ContractUtil");
-const { prepareVoteProposalData } = require("@openlaw/snapshot-js-erc712");
-const {
+import Web3 from "web3";
+import { prepareVoteProposalData } from "@openlaw/snapshot-js-erc712";
+import { sha3 } from "tribute-contracts/utils/contract-util.js";
+import {
+  adaptersIdsMap,
+  extensionsIdsMap,
+} from "tribute-contracts/utils/dao-ids-util.js";
+import {
   entryDao,
-  entryBank,
-  entryERC1271,
-  entryExecutor,
-  entryNft,
-} = require("tribute-contracts/utils/DeploymentUtil");
-const {
   daoAccessFlags,
-  parseSelectedFlags,
-} = require("tribute-contracts/utils/aclFlags");
-const { getContract } = require("../../utils/contract");
-const { submitSnapshotProposal } = require("../../services/snapshot-service");
-const {
-  getExtensionAddress,
-  getAdapterAddress,
-} = require("../core/dao-registry");
-const { warn } = require("../../utils/logging");
+  getEnabledExtensionFlags,
+  bankExtensionAclFlags,
+  erc721ExtensionAclFlags,
+  erc1155ExtensionAclFlags,
+  erc1271ExtensionAclFlags,
+  executorExtensionAclFlags,
+  vestingExtensionAclFlags,
+  erc20ExtensionAclFlags,
+} from "tribute-contracts/utils/access-control-util.js";
+import { configs } from "../../../cli-config.js";
+import { getAdapter } from "../../utils/contract.js";
+import { submitSnapshotProposal } from "../../services/snapshot-service.js";
+import { warn } from "../../utils/logging.js";
+import { parseConfigs } from "./configuration-adapter.js";
+import {
+  checkSenderAddress,
+  isProposalReadyToBeProcessed,
+} from "./offchain-voting-adapter.js";
 
-const submitManagingProposal = async (
+const CONTRACT_NAME = "ManagingContract";
+
+export const submitManagingProposal = async ({
+  adapterOrExtensionId,
+  adapterOrExtensionAddress,
   updateType,
-  adapterName,
-  adapterAddress,
-  selectedDaoAclFlags,
+  aclFlags,
+  numericConfigKeys,
+  numericConfigValues,
   extensions,
-  keys,
-  values,
-  opts
-) => {
-  const configKeys = keys ? keys.split(",").map((k) => toBytes32(k)) : [];
-  const configValues = values ? values.split(",").map((v) => v) : [];
-  const configAclFlags = parseSelectedFlags(
-    daoAccessFlags,
-    selectedDaoAclFlags,
-    "DaoRegisty"
-  );
-  const managingContractAddress = await getAdapterAddress("managing");
+  configurations,
+}) => {
+  const configKeys = numericConfigKeys
+    ? numericConfigKeys.map((k) => sha3(k))
+    : [];
+  const configValues = numericConfigValues ? numericConfigValues : [];
+  const configAclFlags = aclFlags ? new Array(...aclFlags) : new Array();
+  const extensionAddresses = [];
+  const extensionAclFlags = [];
 
-  const { contract, provider, wallet } = getContract(
-    "ManagingContract",
-    managingContractAddress
-  );
+  Object.values(extensions).forEach((e) => {
+    extensionAddresses.push(e.data.address);
+    const allAclsForExtension = availableExtensions[e.extensionId];
+    extensionAclFlags.push(
+      getEnabledExtensionFlags(
+        allAclsForExtension,
+        e.extensionId,
+        e.data.address,
+        { extensions: { [e.extensionId]: e.data.flags } }
+      ).flags
+    );
+  });
 
-  const { extensionAddresses, extensionAclFlags } = await validateExtensions(
-    extensions
-  );
+  const daoConfigurations = configurations ? parseConfigs(configurations) : [];
 
-  return await submitSnapshotProposal(
-    `Adapter: ${adapterName}`,
-    "Creates/Update adapter",
-    managingContractAddress,
+  const {
+    contract: managingAdapter,
     provider,
-    wallet
-  ).then(async (res) => {
+    wallet,
+  } = await getAdapter(adaptersIdsMap.MANAGING_ADAPTER, CONTRACT_NAME);
+
+  return await submitSnapshotProposal({
+    title: `ContractId: ${adapterOrExtensionId}`,
+    description: `Add/update contract: ${adapterOrExtensionAddress}`,
+    actionId: managingAdapter.address,
+    provider,
+    wallet,
+  }).then(async (res) => {
     const data = res.data;
     const snapshotProposalId = res.uniqueId;
     const daoProposalId = sha3(snapshotProposalId);
 
-    if (opts.debug) warn(`Snapshot Message: ${JSON.stringify(data)}\n`);
+    if (configs.debug) warn(`Snapshot Message: ${JSON.stringify(data)}\n`);
     const message = {
       payload: {
         body: data.payload.body,
@@ -77,29 +94,38 @@ const submitManagingProposal = async (
       space: data.space,
       timestamp: parseInt(data.timestamp),
     };
-    if (opts.debug) warn(`DAO Message: ${JSON.stringify(message)}\n`);
+    if (configs.debug) warn(`DAO Message: ${JSON.stringify(message)}\n`);
 
     const encodedData = prepareVoteProposalData(message, new Web3(""));
-    if (opts.debug) warn(`Encoded DAO message: ${encodedData}\n`);
+    if (configs.debug) warn(`Encoded DAO message: ${encodedData}\n`);
 
-    await contract.submitProposal(
+    await checkSenderAddress({
+      adapterAddress: managingAdapter.address,
+      encodedData,
+      sender: wallet.address,
+    });
+
+    const flags = entryDao(adapterOrExtensionId, adapterOrExtensionAddress, {
+      dao: configAclFlags,
+    }).flags;
+
+    const proposalDetails = {
+      adapterOrExtensionId: sha3(adapterOrExtensionId),
+      adapterOrExtensionAddr: adapterOrExtensionAddress,
+      flags,
+      updateType: parseUpdateType(updateType),
+      keys: configKeys,
+      values: configValues,
+      extensionAddresses,
+      extensionAclFlags,
+    };
+
+    await managingAdapter.submitProposal(
       configs.dao,
       daoProposalId,
-      {
-        adapterOrExtensionId: sha3(adapterName),
-        adapterOrExtensionAddr: adapterAddress,
-        updateType: updateType,
-        flags: entryDao(
-          adapterName,
-          { address: adapterAddress },
-          configAclFlags
-        ).flags,
-        keys: configKeys,
-        values: configValues,
-        extensionAddresses: extensionAddresses,
-        extensionAclFlags: extensionAclFlags,
-      },
-      encodedData ? encodedData : ethers.utils.toUtf8Bytes(""),
+      proposalDetails,
+      [...daoConfigurations],
+      encodedData,
       { from: wallet.address }
     );
 
@@ -107,71 +133,38 @@ const submitManagingProposal = async (
   });
 };
 
-const processManagingProposal = async (daoProposalId) => {
-  const managingContractAddress = await getAdapterAddress("managing");
-  const { contract, wallet } = getContract(
-    "ManagingContract",
-    managingContractAddress
+export const processManagingProposal = async ({ daoProposalId }) => {
+  await isProposalReadyToBeProcessed({ daoProposalId });
+
+  const { contract: managingAdapter, wallet } = await getAdapter(
+    adaptersIdsMap.MANAGING_ADAPTER,
+    CONTRACT_NAME
   );
 
-  await contract.processProposal(configs.dao, daoProposalId, {
+  await managingAdapter.processProposal(configs.dao, daoProposalId, {
     from: wallet.address,
   });
 
   return { daoProposalId };
 };
 
-/**
- * Validates if the selected extensions exist in the DAO,
- * and converts the selected ACL flags of each extension
- * to its corresponding integer value.
- *
- * @param {*} extensions
- * @returns extensionAddresses
- * @returns extensionAclFlags
- */
-const validateExtensions = async (extensions) => {
-  let extensionAddresses = [];
-  let extensionAclFlags = [];
-  if (!extensions || extensions.length === 0)
-    return { extensionAddresses, extensionAclFlags };
-
-  for (let i in extensions) {
-    const ext = extensions[i];
-    extensionAddresses.push(await getExtensionAddress(ext.id));
-
-    const parsedAclFlags = parseSelectedFlags(
-      ext.aclFlags,
-      ext.selectedFlags,
-      ext.name
-    );
-    switch (ext.id) {
-      case "bank":
-        extensionAclFlags.push(
-          entryBank({ address: undefined }, parsedAclFlags).flags
-        );
-        break;
-      case "nft":
-      case "erc1155-ext":
-        extensionAclFlags.push(
-          entryNft({ address: undefined }, parsedAclFlags).flags
-        );
-        break;
-      case "erc1271":
-        extensionAclFlags.push(
-          entryERC1271({ address: undefined }, parsedAclFlags).flags
-        );
-        break;
-      case "erc1271":
-        extensionAclFlags.push(
-          entryExecutor({ address: undefined }, parsedAclFlags).flags
-        );
-        break;
-      default:
-        throw Error(`ACL flag not supported for extension: ${ext.name}`);
-    }
-  }
-  return { extensionAddresses, extensionAclFlags };
+export const availableExtensions = {
+  [extensionsIdsMap.BANK_EXT]: bankExtensionAclFlags,
+  [extensionsIdsMap.ERC1271_EXT]: erc1271ExtensionAclFlags,
+  [extensionsIdsMap.ERC721_EXT]: erc721ExtensionAclFlags,
+  [extensionsIdsMap.EXECUTOR_EXT]: executorExtensionAclFlags,
+  [extensionsIdsMap.VESTING_EXT]: vestingExtensionAclFlags,
+  [extensionsIdsMap.ERC1155_EXT]: erc1155ExtensionAclFlags,
+  [extensionsIdsMap.ERC20_EXT]: erc20ExtensionAclFlags,
 };
 
-module.exports = { submitManagingProposal, processManagingProposal };
+const parseUpdateType = async (value) => {
+  switch (value) {
+    case "Adapter":
+      return 1;
+    case "Extension":
+      return 2;
+    default:
+      throw Error(`Unknown update type: ${value}`);
+  }
+};

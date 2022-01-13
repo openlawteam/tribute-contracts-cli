@@ -8,10 +8,8 @@
  * @param {startAt} number - Offset to begin from. Default is 0.
  * @returns {number[]}
  */
-const numberRangeArray = (size = 1, startAt = 0) => {
+export const numberRangeArray = (size = 1, startAt = 0) => {
   const adjustedSize = size + 1 - startAt;
 
   return [...Array(adjustedSize)].map((_, i) => startAt + i);
 };
-
-module.exports = { numberRangeArray };

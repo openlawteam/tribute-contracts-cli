@@ -1,23 +1,24 @@
 {
   "name": "tribute-contracts-cli",
   "version": "0.2.2",
-  "description": "A command line interface tool to interact with @openlaw/tribute-contracts",
-  "main": "cli.js",
+  "description": "A command line interface tool to interact with @tributelabs/tribute-contracts",
+  "type": "commonjs",
+  "main": "./lib/index.js",
   "bin": {
-    "trib": "./cli.js"
+    "trib": "./lib/index.js"
   },
   "directories": {
     "test": "test"
   },
   "scripts": {
-    "build": "npm ci && npm run compile",
+    "build": "npm run compile && npm run tsc",
+    "tsc": "tsc",
     "compile": "rimraf build && mkdir -p build/contracts && cp -r node_modules/tribute-contracts/contracts/** build/contracts && hardhat compile",
-    "test": "echo \"Error: no test found\"",
     "release": "np --no-publish",
     "lint:fix": "prettier --write '**/*.{js,ts,json}'",
     "lint": "prettier --check '**/*.{js,ts,json}'"
   },
-  "author": "dev@openlaw.io",
+  "author": "dev@tributelabs.xyz",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -29,21 +30,26 @@
   "dependencies": {
     "@openlaw/snapshot-js-erc712": "1.3.0",
     "chalk": "^4.1.2",
+    "cjs-loader": "^0.1.0",
     "commander": "^8.1.0",
     "dotenv": "^10.0.0",
+    "esm": "^3.2.25",
     "eth-sig-util": "3.0.1",
     "ethereumjs-util": "7.1.0",
     "ethers": "5.4.5",
     "hardhat": "^2.6.2",
     "inquirer": "^8.1.2",
-    "tribute-contracts": "2.2.1",
+    "tribute-contracts": "2.3.3",
     "truffle": "5.4.6",
     "web3": "1.4.0"
   },
   "devDependencies": {
+    "@openzeppelin/test-environment": "^0.1.9",
     "np": "^7.5.0",
     "prettier": "^2.4.1",
-    "rimraf": "^3.0.2"
+    "rimraf": "^3.0.2",
+    "ts-node": "^10.4.0",
+    "typescript": "^4.5.4"
   },
   "prettier": {
     "overrides": [
