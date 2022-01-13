@@ -7,20 +7,25 @@ import {
   getAdapterAddress,
 } from "../contracts/core/dao-registry.js";
 
-export const openWallet = (provider) => {
+const openWallet = (provider) => {
   // The Wallet class inherits Signer and can sign transactions
   // and messages using a private key as a standard Externally Owned Account (EOA).
-  const wallet = ethers.Wallet.fromMnemonic(configs.mnemonic);
+  let wallet;
+  try {
+    wallet = ethers.Wallet.fromMnemonic(configs.mnemonicOrPrivateKey);
+  } catch (e) {
+    wallet = new ethers.Wallet(configs.mnemonicOrPrivateKey);
+  }
   return wallet.connect(provider);
 };
 
-export const getProvider = (network) => {
+const getProvider = (network) => {
   if (!network)
     throw new Error("Unable to get the provider due to invalid network");
 
   switch (network) {
     case "rinkeby":
-    case "mainnet":
+    case "mainnet": {
       if (configs.alchemyApiKey)
         return new ethers.providers.AlchemyProvider(
           network,
@@ -33,6 +38,7 @@ export const getProvider = (network) => {
         );
 
       return ethers.getDefaultProvider(network);
+    }
 
     case "ganache":
     default:
@@ -57,8 +63,18 @@ export const attachContract = (address, abi, wallet) => {
   return contract.connect(wallet);
 };
 
-export const getAdapter = (name) => {
-  const adapterAddress = await getAdapterAddress(name);
+export const getContract = (name, address) => {
+  const provider = getProvider(configs.network);
+  const wallet = openWallet(provider);
+  return {
+    contract: attachContract(address, getABI(name), wallet),
+    provider,
+    wallet,
+  };
+};
+
+export const getAdapter = async (id, name) => {
+  const adapterAddress = await getAdapterAddress(id);
   const provider = getProvider(configs.network);
   const wallet = openWallet(provider);
   return {
@@ -68,8 +84,8 @@ export const getAdapter = (name) => {
   };
 };
 
-export const getExtension = (name) => {
-  const adapterAddress = await getExtensionAddress(name);
+export const getExtension = async (id, name) => {
+  const adapterAddress = await getExtensionAddress(id);
   const provider = getProvider(configs.network);
   const wallet = openWallet(provider);
   return {

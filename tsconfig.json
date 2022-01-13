@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "rootDir": ".",
-    "module": "CommonJS",
-    "target": "ES6",
+    "module": "commonjs",
+    "target": "es2018",
     "moduleResolution": "node",
     "allowJs": true, /* Allow JavaScript files to be a part of your program. Use the `checkJS` option to get errors from these files. */
     "esModuleInterop": true, /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables `allowSyntheticDefaultImports` for type compatibility. */
@@ -30,5 +30,8 @@
   "exclude": [
     "lib/",
     "build/",
+  ],
+  "files": [
+    "./hardhat.config.js"
   ]
 }

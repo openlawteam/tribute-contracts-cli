@@ -15,7 +15,7 @@ import {
 
 export const daoRegistryCommands = (program) => {
   program
-    .command("get-adapter-addr <adapterId>")
+    .command("get-adapter <adapterId>")
     .description("Gets the adapter address if configured in the DAO.")
     .action((adapterId) => {
       notice(`\n ::: Get adapter address...\n`);
@@ -30,7 +30,7 @@ export const daoRegistryCommands = (program) => {
     });
 
   program
-    .command("get-extension-addr <extensionId>")
+    .command("get-extension <extensionId>")
     .description("Gets the extension address if configured in the DAO.")
     .action((extensionId) => {
       notice(`\n ::: Get extension address...\n`);

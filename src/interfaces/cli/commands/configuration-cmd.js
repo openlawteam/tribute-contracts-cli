@@ -1,3 +1,5 @@
+import inquirer from "inquirer";
+import { ethers } from "ethers";
 import { configs } from "../../../../cli-config.js";
 import {
   success,
@@ -55,7 +57,7 @@ export const configurationCommands = (program) => {
   return program;
 };
 
-const collectConfigs = async (inputs = []) => {
+export const collectConfigs = async (inputs = []) => {
   const prompts = [
     {
       type: "input",

@@ -1,5 +1,9 @@
+const dotenv = require("dotenv");
+dotenv.config({ path: ".env" });
+
 if (!process.env.DAO_ADDRESS) throw Error("Missing DAO_ADDRESS env var");
-if (!process.env.MNEMONIC) throw Error("Missing MNEMONIC env var");
+if (!process.env.MNEMONIC_OR_PRIVATE_KEY)
+  throw Error("Missing MNEMONIC_OR_PRIVATE_KEY env var");
 if (!process.env.SNAPSHOT_HUB_SPACE)
   throw Error("Missing SNAPSHOT_HUB_SPACE env var");
 if (!process.env.SNAPSHOT_HUB_API_URL)
@@ -16,10 +20,12 @@ const configs = {
   space: process.env.SNAPSHOT_HUB_SPACE,
   snapshotHubApi: process.env.SNAPSHOT_HUB_API_URL,
   debug: process.env.DEBUG === "true",
-  mnemonic: process.env.MNEMONIC,
+  mnemonicOrPrivateKey: process.env.MNEMONIC_OR_PRIVATE_KEY,
   ganacheUrl: process.env.GANACHE_URL
     ? process.env.GANACHE_URL
     : "http://localhost:7545",
+  infuraApiKey: process.env.INFURA_KEY,
+  alchemyApiKey: process.env.ALCHEMY_KEY,
 };
 
 module.exports = { configs };
