@@ -4,6 +4,7 @@ import {
   getExtensionAddress,
   getDAOConfig,
   getDAOConfigAddress,
+  getMemberAddress,
 } from "../../../contracts/core/dao-registry.js";
 import {
   success,
@@ -14,6 +15,21 @@ import {
 } from "../../../utils/logging.js";
 
 export const daoRegistryCommands = (program) => {
+  program
+    .command("get-member-addr <index>")
+    .description("Gets the member address from the DAO based on the index.")
+    .action((index) => {
+      notice(`\n ::: Get member address...\n`);
+      logEnvConfigs(configs);
+      info(`Index:\t\t\t${index}`);
+
+      return getMemberAddress(index)
+        .then((data) => {
+          success(`Address: \t\t${data}\n`);
+        })
+        .catch((err) => error("Error while getting the member address", err));
+    });
+
   program
     .command("get-adapter <adapterId>")
     .description("Gets the adapter address if configured in the DAO.")
