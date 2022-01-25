@@ -5,7 +5,7 @@ const { sha3, toBN } = require("tribute-contracts/utils/ContractUtil");
 const { prepareVoteProposalData } = require("@openlaw/snapshot-js-erc712");
 const { getContract } = require("../../utils/contract");
 const { submitSnapshotProposal } = require("../../services/snapshot-service");
-const { warn } = require("../../utils/logging");
+const { warn, info } = require("../../utils/logging");
 const { isProposalReadyToBeProcessed } = require("./offchain-voting-adapter");
 
 const submitConfigurationProposal = async ({ configurations, opts }) => {
@@ -13,9 +13,17 @@ const submitConfigurationProposal = async ({ configurations, opts }) => {
     "ConfigurationContract",
     configs.contracts.ConfigurationContract
   );
+
+  const keys = configurations.map((c) => c.configKey);
+  const values = configurations.map((c) => c.configValue);
+  info(keys);
+  const keysSha3 = keys.map((k) => sha3(k));
+  info(keysSha3);
+  info(values);
+
   return await submitSnapshotProposal(
-    `Keys: ${configurations.key}: ${configurations.value}`,
-    "Creates/Update configuration",
+    `Configuration proposal`,
+    "Creates/Updates DAO configs",
     configs.contracts.ConfigurationContract,
     provider,
     wallet
@@ -63,8 +71,8 @@ const submitConfigurationProposal = async ({ configurations, opts }) => {
     await contract.submitProposal(
       configs.contracts.DaoRegistry,
       daoProposalId,
-      [sha3(configurations.key)],
-      [configurations.value],
+      [...keysSha3],
+      [...values],
       encodedData ? encodedData : ethers.utils.toUtf8Bytes(""),
       { from: wallet.address }
     );

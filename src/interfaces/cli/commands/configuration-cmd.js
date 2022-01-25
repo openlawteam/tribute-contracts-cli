@@ -19,13 +19,14 @@ const {
 
 const configurationCommands = (program) => {
   program
-    .command("config-proposal <key> <value>")
+    .command("config-proposal")
     .description("Submit a new configuration proposal.")
     .action(async (key, value) => {
       notice(`\n::: Submitting configuration proposal...\n`);
+      const configurations = await collectConfigs();
 
       return submitConfigurationProposal({
-        configurations: { key, value },
+        configurations,
         opts: program.opts(),
       })
         .then((res) => {
@@ -71,7 +72,7 @@ const collectConfigs = async (inputs = []) => {
       type: "list",
       name: "configType",
       message: `Which type of configuration do you want to update?`,
-      choices: ["Numeric", "Address"],
+      choices: ["Numeric"],
     },
     {
       type: "input",
@@ -83,10 +84,6 @@ const collectConfigs = async (inputs = []) => {
           case "Numeric": {
             if (ethers.BigNumber.from(input)) return true;
             return "Not a number";
-          }
-          case "Address": {
-            if (ethers.utils.isAddress(input)) return true;
-            return "Not an ethereum address";
           }
           default:
             return "Invalid config value";
