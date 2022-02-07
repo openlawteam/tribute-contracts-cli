@@ -52,6 +52,7 @@ In the root folder of the project, create the `.env` file, and set the env vars:
 ### Run
 
 > npm link
+
 > trib --help
 
 ### Version Compatibility
