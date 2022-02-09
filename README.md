@@ -45,16 +45,17 @@ In the root folder of the project, create the `.env` file, and set the env vars:
   ETHEREUM_NETWORK=..
   ```
 
+### Install
+
+> npm ci
+
 ### Build
 
 > npm run build
 
-### Run
-
-> npm link
+### Available Commands
 
 > trib --help
-
 ### Version Compatibility
 
 |                                        CLI                                         |                                   Snapshot-JS                                   |                                   Contracts                                    |                                      Snapshot Hub                                       |

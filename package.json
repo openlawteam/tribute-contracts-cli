@@ -3,7 +3,7 @@
   "version": "0.2.3",
   "description": "A command line interface tool to interact with @tributelabs/tribute-contracts",
   "type": "commonjs",
-  "main": "./lib/index.js",
+  "main": "./index.js",
   "bin": {
     "trib": "./lib/index.js"
   },
@@ -11,12 +11,13 @@
     "test": "test"
   },
   "scripts": {
-    "build": "npm run compile && npm run tsc",
+    "build": "npm run compile && npm run link",
     "tsc": "tsc",
-    "compile": "rimraf build && mkdir -p build/contracts && cp -r node_modules/tribute-contracts/contracts/** build/contracts && hardhat compile",
+    "compile": "rimraf build/ && mkdir -p build/contracts && cp -r node_modules/tribute-contracts/contracts/** build/contracts && hardhat compile",
     "release": "np --no-publish --no-tests",
     "lint:fix": "prettier --write '**/*.{js,ts,json}'",
-    "lint": "prettier --check '**/*.{js,ts,json}'"
+    "lint": "prettier --check '**/*.{js,ts,json}'",
+    "link": "rimraf lib/ && tsc && chmod +x ./lib/index.js && npm link"
   },
   "author": "dev@tributelabs.xyz",
   "license": "MIT",
