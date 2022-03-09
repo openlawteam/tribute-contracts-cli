@@ -88,6 +88,8 @@ const submitManagingProposal = async ({
           configAclFlags
         ).flags,
       },
+      configKeys,
+      configValues,
       encodedData,
       { from: wallet.address }
     );
