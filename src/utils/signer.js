@@ -3,6 +3,7 @@ const {
   getDomainDefinition,
   prepareMessage,
 } = require("@openlaw/snapshot-js-erc712");
+const { ethers } = require("ethers");
 
 const SignerV4 = (privateKeyStr) => {
   return (msg, verifyingContract, actionId, chainId) => {
@@ -27,4 +28,8 @@ const SignerV4 = (privateKeyStr) => {
   };
 };
 
-module.exports = { SignerV4 };
+const createRandomWallet = () => {
+  return ethers.Wallet.createRandom();
+}
+
+module.exports = { SignerV4, createRandomWallet };
