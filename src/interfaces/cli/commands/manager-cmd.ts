@@ -2,9 +2,7 @@ import inquirer from "inquirer";
 import { ethers } from "ethers";
 import { daoAccessFlags } from "tribute-contracts/utils/access-control-util.js";
 import { extensionsIdsMap } from "tribute-contracts/utils/dao-ids-util.js";
-import {
-  availableExtensions,
-} from "../../../contracts/adapters/managing-adapter.js";
+import { availableExtensions } from "../../../contracts/adapters/managing-adapter.js";
 import {
   success,
   notice,
@@ -15,7 +13,7 @@ import {
 import { configs } from "../../../../cli-config.js";
 import { collectConfigs } from "./configuration-cmd.js";
 import { getExtensionAddress } from "../../../contracts/core/dao-registry.js";
-import { submitAndProcessProposal } from '../../../contracts/adapters/manager-adapter.js';
+import { submitAndProcessProposal } from "../../../contracts/adapters/manager-adapter.js";
 
 export const managerCommands = (program) => {
   program
@@ -76,7 +74,9 @@ export const managerCommands = (program) => {
           });
         })
         .then((data) => {
-          success(`adapterOrExtension ${adapterOrExtensionId} updated to address ${adapterOrExtensionAddress}\n`);
+          success(
+            `adapterOrExtension ${adapterOrExtensionId} updated to address ${adapterOrExtensionAddress}\n`
+          );
           success(`::: Managing proposal submitted and processed!\n`, true);
         })
         .catch((err) => error("Error while submitting managing proposal", err));

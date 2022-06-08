@@ -1,7 +1,5 @@
 import { sha3 } from "tribute-contracts/utils/contract-util.js";
-import {
-  adaptersIdsMap,
-} from "tribute-contracts/utils/dao-ids-util.js";
+import { adaptersIdsMap } from "tribute-contracts/utils/dao-ids-util.js";
 import {
   entryDao,
   getEnabledExtensionFlags,
@@ -10,8 +8,8 @@ import { configs } from "../../../cli-config.js";
 import { getAdapter } from "../../utils/contract.js";
 import { parseConfigs } from "./configuration-adapter.js";
 import { GcpKmsSigner, TypedDataVersion } from "ethers-gcp-kms-signer";
-import { availableExtensions } from './managing-adapter';
-import { getAdapterAddress } from '../core/dao-registry.js';
+import { availableExtensions } from "./managing-adapter";
+import { getAdapterAddress } from "../core/dao-registry.js";
 
 const CONTRACT_NAME = "Manager";
 
@@ -30,24 +28,32 @@ export const submitAndProcessProposal = async ({
     : [];
   const configValues = numericConfigValues ? numericConfigValues : [];
   const configAclFlags = aclFlags ? new Array(...aclFlags) : new Array();
-  const { extensionAddresses, extensionAclFlags } = Object.values(extensions).reduce((acc, e) => {
-    acc.extensionAddresses.push(e.data.address);
-    const allAclsForExtension = availableExtensions[e.extensionId];
-    acc.extensionAclFlags.push(
-      getEnabledExtensionFlags(
-        allAclsForExtension,
-        e.extensionId,
-        e.data.address,
-        { extensions: { [e.extensionId]: e.data.flags } }
-      ).flags
-    );
-    return acc;
-  }, { extensionAddresses: [], extensionAclFlags: [] });
+  const { extensionAddresses, extensionAclFlags } = Object.values(
+    extensions
+  ).reduce(
+    (acc, e) => {
+      acc.extensionAddresses.push(e.data.address);
+      const allAclsForExtension = availableExtensions[e.extensionId];
+      acc.extensionAclFlags.push(
+        getEnabledExtensionFlags(
+          allAclsForExtension,
+          e.extensionId,
+          e.data.address,
+          { extensions: { [e.extensionId]: e.data.flags } }
+        ).flags
+      );
+      return acc;
+    },
+    { extensionAddresses: [], extensionAclFlags: [] }
+  );
   const daoConfigurations = configurations ? parseConfigs(configurations) : [];
 
   // TODO: uncomment after new tribute-contracts release
   // const { contract: managerAdapter, provider } = await getAdapter(adaptersIdsMap.MANAGER, CONTRACT_NAME);
-  const { contract: managerAdapter, provider } = await getAdapter('manager', CONTRACT_NAME);
+  const { contract: managerAdapter, provider } = await getAdapter(
+    "manager",
+    CONTRACT_NAME
+  );
   const { chainId } = await provider.getNetwork();
   const nonce = (await managerAdapter.nonces(configs.dao)).toNumber() + 1;
 
@@ -55,7 +61,7 @@ export const submitAndProcessProposal = async ({
     dao: configAclFlags,
   }).flags;
   const updateTypeResolved = await parseUpdateType(updateType);
-  
+
   const proposal = {
     adapterOrExtensionId: sha3(adapterOrExtensionId),
     adapterOrExtensionAddr: adapterOrExtensionAddress,
@@ -77,7 +83,7 @@ export const submitAndProcessProposal = async ({
       proposalId,
     },
     managerAdapter.address,
-    chainId,
+    chainId
   );
 
   await managerAdapter.processSignedProposal(
@@ -94,7 +100,11 @@ export const submitAndProcessProposal = async ({
   return { proposalId, updatedAddress };
 };
 
-const getSignature = async (proposalCouponData, managerAdapterAddress, chainId) => {
+const getSignature = async (
+  proposalCouponData,
+  managerAdapterAddress,
+  chainId
+) => {
   const domain = {
     name: "Snapshot Message",
     version: "4",
