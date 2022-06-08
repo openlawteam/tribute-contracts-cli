@@ -20,6 +20,8 @@
     "./**/*.js",
     "node_modules/tribute-contracts/utils/**/*.ts",
     "node_modules/tribute-contracts/utils/**/*.js",
+    "node_modules/tribute-contracts/configs/**/*.ts",
+    "node_modules/tribute-contracts/configs/**/*.js",
     "node_modules/tribute-contracts/migrations/configs/**/*.ts",
     "node_modules/tribute-contracts/migrations/configs/**/*.js"
   ],

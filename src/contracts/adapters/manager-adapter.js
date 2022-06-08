@@ -48,12 +48,7 @@ export const submitAndProcessProposal = async ({
   );
   const daoConfigurations = configurations ? parseConfigs(configurations) : [];
 
-  // TODO: uncomment after new tribute-contracts release
-  // const { contract: managerAdapter, provider } = await getAdapter(adaptersIdsMap.MANAGER, CONTRACT_NAME);
-  const { contract: managerAdapter, provider } = await getAdapter(
-    "manager",
-    CONTRACT_NAME
-  );
+  const { contract: managerAdapter, provider } = await getAdapter(adaptersIdsMap.MANAGER, CONTRACT_NAME);
   const { chainId } = await provider.getNetwork();
   const nonce = (await managerAdapter.nonces(configs.dao)).toNumber() + 1;
 

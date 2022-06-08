@@ -75,7 +75,7 @@ export const managerCommands = (program) => {
         })
         .then((data) => {
           success(
-            `adapterOrExtension ${adapterOrExtensionId} updated to address ${adapterOrExtensionAddress}\n`
+            `adapterOrExtension: "${adapterOrExtensionId}" updated to address ${adapterOrExtensionAddress}\n`
           );
           success(`::: Managing proposal submitted and processed!\n`, true);
         })
