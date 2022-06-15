@@ -38,13 +38,15 @@
     "eth-sig-util": "3.0.1",
     "ethereumjs-util": "7.1.0",
     "ethers": "5.4.5",
+    "ethers-gcp-kms-signer": "^1.1.2",
     "hardhat": "^2.6.2",
     "inquirer": "^8.1.2",
-    "tribute-contracts": "2.3.3",
+    "tribute-contracts": "2.5.0",
     "truffle": "5.4.6",
     "web3": "1.4.0"
   },
   "devDependencies": {
+    "@openzeppelin/contracts": "^4.6.0",
     "@openzeppelin/test-environment": "^0.1.9",
     "np": "^7.5.0",
     "prettier": "^2.4.1",

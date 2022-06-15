@@ -26,6 +26,13 @@ const configs = {
     : "http://localhost:7545",
   infuraApiKey: process.env.INFURA_KEY,
   alchemyApiKey: process.env.ALCHEMY_KEY,
+  kmsCredentials: {
+    projectId: process.env.KMS_PROJECT_ID,
+    locationId: process.env.KMS_LOCATION_ID,
+    keyRingId: process.env.KMS_KEY_RING_ID,
+    keyId: process.env.KMS_KEY_ID,
+    keyVersion: process.env.KMS_KEY_VERSION,
+  },
 };
 
 module.exports = { configs };

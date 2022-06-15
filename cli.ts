@@ -10,6 +10,7 @@ import { configurationCommands } from "./src/interfaces/cli/commands/configurati
 import { daoRegistryCommands } from "./src/interfaces/cli/commands/dao-registry-cmd.js";
 import { daoArtifactsCommands } from "./src/interfaces/cli/commands/dao-artifacts-cmd.js";
 import { bankExtensionCommands } from "./src/interfaces/cli/commands/bank-extension-cmd.js";
+import { managerCommands } from "./src/interfaces/cli/commands/manager-cmd";
 import { readFile } from "fs/promises";
 import { Command } from "commander";
 const program = new Command();
@@ -20,6 +21,7 @@ const main = async () => {
   const pkg = buffer.toJSON();
   program.version(pkg["version"]);
 
+  managerCommands(program);
   managingCommands(program);
   offchainCommands(program);
   configurationCommands(program);
