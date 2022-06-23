@@ -163,6 +163,8 @@ const parseUpdateType = async (value) => {
       return 1;
     case "Extension":
       return 2;
+    case "Configs":
+      return 3;
     default:
       throw Error(`Unknown update type: ${value}`);
   }
