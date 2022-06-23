@@ -49,7 +49,7 @@ export const submitAndProcessProposal = async ({
   const daoConfigurations = configurations ? parseConfigs(configurations) : [];
 
   const { contract: managerAdapter, provider } = await getAdapter(
-    adaptersIdsMap.MANAGER,
+    adaptersIdsMap.MANAGER_ADAPTER,
     CONTRACT_NAME
   );
   const { chainId } = await provider.getNetwork();
