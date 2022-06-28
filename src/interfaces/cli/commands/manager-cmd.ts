@@ -28,20 +28,39 @@ export const managerCommands = (program) => {
             type: "list",
             name: "updateType",
             message: `Which type of contract do you want to update?`,
-            choices: ["Adapter", "Extension"],
-          },
-          {
-            type: "checkbox",
-            message: (a) =>
-              `Which DAO permissions does the ${a.updateType} need?`,
-            name: "aclFlags",
-            choices: daoAccessFlags.map((f) => Object.assign({ name: f })),
+            choices: ["Adapter", "Extension", "Configs"],
           },
         ])
         .then(async (answers) => {
-          const { extensions } = await promptExtensionAccessFlags(
-            adapterOrExtensionId
-          );
+          let aclFlags = [];
+          if (answers.updateType !== "Configs") {
+            aclFlags = (
+              await inquirer.prompt([
+                {
+                  type: "checkbox",
+                  message: (a) =>
+                    `Which DAO permissions does the ${a.updateType} need?`,
+                  name: "aclFlags",
+                  choices: daoAccessFlags.map((f) =>
+                    Object.assign({ name: f })
+                  ),
+                },
+              ])
+            ).aclFlags;
+          }
+          return { ...answers, aclFlags };
+        })
+        .then(async (answers) => {
+          let extensions = {};
+          if (answers.updateType !== "Configs") {
+            extensions = (
+              await promptExtensionAccessFlags(adapterOrExtensionId)
+            ).extensions;
+          }
+          return { ...answers, extensions };
+        })
+        .then(async (answers) => {
+          const { updateType, aclFlags, extensions } = answers;
 
           const { configurations } = await promptDaoConfigurations(
             adapterOrExtensionId
@@ -65,8 +84,8 @@ export const managerCommands = (program) => {
           return submitAndProcessProposal({
             adapterOrExtensionId,
             adapterOrExtensionAddress,
-            updateType: answers.updateType,
-            aclFlags: answers.aclFlags,
+            updateType,
+            aclFlags,
             numericConfigKeys: [], // empty because the configs are now collected using the configurations obj
             numericConfigValues: [], // empty because the configs are now collected using the configurations obj
             extensions,

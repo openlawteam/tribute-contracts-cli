@@ -92,14 +92,14 @@ export const parseConfigs = (inputs) => {
   Array.from(inputs).forEach((i) => {
     if (i.configType === "Numeric") {
       configurations.push({
-        key: sha3(i.configKey),
+        key: getKey(i.configKey),
         configType: 0, // Numeric
         numericValue: i.configValue,
         addressValue: ZERO_ADDRESS,
       });
     } else if (i.configType === "Address") {
       configurations.push({
-        key: sha3(i.configKey),
+        key: getKey(i.configKey),
         configType: 1, // Address
         numericValue: 0,
         addressValue: ethers.utils.getAddress(i.configValue),
@@ -108,4 +108,32 @@ export const parseConfigs = (inputs) => {
   });
   if (configs.debug) console.log(configurations);
   return configurations;
+};
+
+const getKey = (key) => {
+  const kycOnboardingKeys = new Set([
+    "kyc-onboarding.signerAddress",
+    "kyc-onboarding.chunkSize",
+    "kyc-onboarding.unitsPerChunk",
+    "kyc-onboarding.maximumChunks",
+    "kyc-onboarding.maximumTotalUnits",
+    "kyc-onboarding.maxMembers",
+    "kyc-onboarding.canTopUp",
+    "kyc-onboarding.fundTargetAddress",
+    "kyc-onboarding.tokensToMint",
+  ]);
+
+  if (kycOnboardingKeys.has(key)) {
+    if (!process.env.TOKEN_ADDR) {
+      throw new Error(
+        "Missing proess.env.TOKEN_ADDR needed for kyc onboarding config keys"
+      );
+    }
+    const coder = new ethers.utils.AbiCoder();
+    return sha3(
+      coder.encode(["address", "bytes32"], [process.env.TOKEN_ADDR, sha3(key)])
+    );
+  } else {
+    return sha3(key);
+  }
 };
