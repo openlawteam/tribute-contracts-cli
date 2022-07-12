@@ -82,7 +82,7 @@ export const submitAndProcessProposal = async ({
     chainId
   );
 
-  await managerAdapter.processSignedProposal(
+  const tx = await managerAdapter.processSignedProposal(
     configs.dao,
     proposal,
     daoConfigurations,
@@ -90,6 +90,11 @@ export const submitAndProcessProposal = async ({
     signature,
     { gasLimit: 2100000 }
   );
+
+  if (tx.wait) {
+    const result = await tx.wait();
+    console.log({result})
+  }
 
   const updatedAddress = await getAdapterAddress(adapterOrExtensionId);
   return { updatedAddress };
