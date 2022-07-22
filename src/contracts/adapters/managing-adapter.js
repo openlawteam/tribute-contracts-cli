@@ -40,7 +40,7 @@ export const submitManagingProposal = async ({
   configurations,
 }) => {
   const configKeys = numericConfigKeys
-    ? numericConfigKeys.map((k) => sha3(k))
+    ? numericConfigKeys.map((k) => getConfigKey(k))
     : [];
   const configValues = numericConfigValues ? numericConfigValues : [];
   const configAclFlags = aclFlags ? new Array(...aclFlags) : new Array();

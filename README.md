@@ -43,6 +43,10 @@ In the root folder of the project, create the `.env` file, and set the env vars:
   ## 
   # The Ethereum Network which CLI should interact with: ganache, rinkeby, mainnet
   ETHEREUM_NETWORK=..
+
+  ##
+  # The token used for onboarding, typically ETH (0x0000000000000000000000000000000000000000)
+  TOKEN_ADDR=0x...
   ```
 
 ### Install
