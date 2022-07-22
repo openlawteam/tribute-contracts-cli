@@ -1,6 +1,4 @@
 const Web3 = require("web3");
-const { ethers } = require("ethers");
-const toBytes32 = ethers.utils.formatBytes32String;
 const { configs } = require("../../../cli-config");
 const { sha3 } = require("tribute-contracts/utils/ContractUtil");
 const { prepareVoteProposalData } = require("@openlaw/snapshot-js-erc712");
@@ -15,6 +13,7 @@ const {
   aclsMap,
   getAclFlagValueForExtension,
 } = require("../../utils/access-flags");
+const { getConfigKey } = require("../../utils/dao-configs");
 
 const submitManagingProposal = async ({
   adapterOrExtensionId,
@@ -28,7 +27,7 @@ const submitManagingProposal = async ({
   opts,
 }) => {
   const configKeys = numericConfigKeys
-    ? numericConfigKeys.map((k) => sha3(k))
+    ? numericConfigKeys.map((k) => getConfigKey(k))
     : [];
   const configValues = numericConfigValues ? numericConfigValues : [];
   const configAclFlags = aclFlags ? parseDaoFlags(aclFlags) : [];

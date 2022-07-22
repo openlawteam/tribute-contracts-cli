@@ -5,6 +5,7 @@ const {
   getDAOConfig,
   getDAOConfigAddress,
 } = require("../../../contracts/core/dao-registry");
+const { KycOnboardingKeys, OffchainVotingKeys } = require("../../../utils/dao-configs");
 const {
   success,
   notice,
@@ -12,7 +13,6 @@ const {
   logEnvConfigs,
   error,
 } = require("../../../utils/logging");
-const { sha3 } = require("tribute-contracts/utils/ContractUtil");
 
 const daoRegistryCommands = (program) => {
   program
@@ -76,6 +76,53 @@ const daoRegistryCommands = (program) => {
         })
         .catch((err) => error("Error while getting the config address", err));
     });
+
+
+  program
+    .command("get-kyc-configs")
+    .description("Gets all the kys configurations from the DAO.")
+    .action(async () => {
+      notice(`\n ::: Get kyc configurations...\n`);
+      logEnvConfigs(configs);
+      info(`Configs: `);
+      return await Promise.all(KycOnboardingKeys.map(async (config) => {
+        if (config.type === "address") {
+          let value = await getDAOConfigAddress(config.name);
+          info(`  ${config.name}: ${value}`);
+          return { name: config.name, value };
+        } else {
+          let value = await getDAOConfig(config.name);
+          info(`  ${config.name}: ${value}`);
+          return { name: config.name, value };
+        }
+      })).then(() => {
+        success(`\n`, true);
+      });
+    });
+
+
+  program
+    .command("get-voting-configs")
+    .description("Gets all the voting configurations from the DAO.")
+    .action(async () => {
+      notice(`\n ::: Get voting configurations...\n`);
+      logEnvConfigs(configs);
+      info(`Configs: `);
+      return await Promise.all(OffchainVotingKeys.map(async (config) => {
+        if (config.type === "address") {
+          let value = await getDAOConfigAddress(config.name);
+          info(`  ${config.name}: ${value}`);
+          return { name: config.name, value };
+        } else {
+          let value = await getDAOConfig(config.name);
+          info(`  ${config.name}: ${value}`);
+          return { name: config.name, value };
+        }
+      })).then(() => {
+        success(`\n`, true);
+      });
+    });
+
 
   return program;
 };

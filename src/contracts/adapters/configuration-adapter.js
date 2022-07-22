@@ -4,9 +4,10 @@ const { configs } = require("../../../cli-config");
 const { sha3, ZERO_ADDRESS } = require("tribute-contracts/utils/ContractUtil");
 const { prepareVoteProposalData } = require("@openlaw/snapshot-js-erc712");
 const { getContract } = require("../../utils/contract");
-const { submitSnapshotProposal } = require("../../services/snapshot-service");
 const { warn } = require("../../utils/logging");
 const { isProposalReadyToBeProcessed } = require("./offchain-voting-adapter");
+const { submitSnapshotProposal } = require("../../services/snapshot-service");
+const { getConfigKey } = require("../../utils/dao-configs");
 
 const submitConfigurationProposal = async ({ configurations, opts }) => {
   const { contract, provider, wallet } = getContract(
@@ -59,7 +60,6 @@ const submitConfigurationProposal = async ({ configurations, opts }) => {
         `voting.getSenderAddress ${sender} does not match the actual wallet sender: ${wallet.address}`
       );
     }
-
     await contract.submitProposal(
       configs.contracts.DaoRegistry,
       daoProposalId,
@@ -93,14 +93,14 @@ const parseConfigs = (inputs) => {
   Array.from(inputs).forEach((i) => {
     if (i.configType === "Numeric") {
       configurations.push({
-        key: sha3(i.configKey),
+        key: getConfigKey(i.configKey),
         configType: 0, // Numeric
         numericValue: i.configValue,
         addressValue: ZERO_ADDRESS,
       });
     } else if (i.configType === "Address") {
       configurations.push({
-        key: sha3(i.configKey),
+        key: getConfigKey(i.configKey),
         configType: 1, // Address
         numericValue: 0,
         addressValue: ethers.utils.getAddress(i.configValue),

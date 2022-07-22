@@ -46,6 +46,9 @@ From the root folder of the project:
 
     # Alchemy Key
     ALCHEMY_KEY=...
+
+    # The token used for onboarding, typically ETH (0x0000000000000000000000000000000000000000)
+    TOKEN_ADDR=0x...
     ```
 
 ### Compile

@@ -1,13 +1,14 @@
 const { sha3 } = require("tribute-contracts/utils/ContractUtil");
 const { getContract } = require("../../utils/contract");
 const { configs } = require("../../../cli-config");
+const { getConfigKey } = require("../../utils/dao-configs");
 
 const getDAOConfig = async (configKey) => {
   const { contract } = getContract(
     "DaoRegistry",
     configs.contracts.DaoRegistry
   );
-  return await contract.getConfiguration(sha3(configKey));
+  return await contract.getConfiguration(getConfigKey(configKey));
 };
 
 const getDAOConfigAddress = async (configKey) => {
@@ -15,7 +16,7 @@ const getDAOConfigAddress = async (configKey) => {
     "DaoRegistry",
     configs.contracts.DaoRegistry
   );
-  return await contract.getAddressConfiguration(sha3(configKey));
+  return await contract.getAddressConfiguration(getConfigKey(configKey));
 };
 
 const getAddressIfDelegated = async (memberAddress) => {

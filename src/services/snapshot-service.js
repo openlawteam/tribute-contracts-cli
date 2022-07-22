@@ -14,19 +14,7 @@ const { configs } = require("../../cli-config");
 const { error } = require("../utils/logging");
 const { getDAOConfig } = require("../contracts/core/dao-registry");
 const { SignerV4 } = require("../utils/signer");
-
-const ContractDAOConfigKeys = {
-  offchainVotingGracePeriod: "offchainvoting.gracePeriod",
-  offchainVotingStakingAmount: "offchainvoting.stakingAmount",
-  offchainVotingVotingPeriod: "offchainvoting.votingPeriod",
-  onboardingChunkSize: "onboarding.chunkSize",
-  onboardingMaximumChunks: "onboarding.maximumChunks",
-  onboardingUnitsPerChunk: "onboarding.unitsPerChunk",
-  onboardingTokenAddr: "onboarding.tokenAddr",
-  votingGracePeriod: "voting.gracePeriod",
-  votingStakingAmount: "voting.stakingAmount",
-  votingVotingPeriod: "voting.votingPeriod",
-};
+const { ContractDAOConfigKeys } = require("../utils/dao-configs");
 
 const buildProposalMessageHelper = async (
   commonData,
