@@ -1,12 +1,13 @@
 const Web3 = require("web3");
 const { ethers } = require("ethers");
 const { configs } = require("../../../cli-config");
-const { sha3, toBN } = require("tribute-contracts/utils/ContractUtil");
+const { sha3 } = require("tribute-contracts/utils/ContractUtil");
 const { prepareVoteProposalData } = require("@openlaw/snapshot-js-erc712");
 const { getContract } = require("../../utils/contract");
-const { submitSnapshotProposal } = require("../../services/snapshot-service");
 const { warn } = require("../../utils/logging");
 const { isProposalReadyToBeProcessed } = require("./offchain-voting-adapter");
+const { submitSnapshotProposal } = require("../../services/snapshot-service");
+const { getConfigKey } = require("../../utils/dao-configs");
 
 const submitConfigurationProposal = async ({ configurations, opts }) => {
   const { contract, provider, wallet } = getContract(
@@ -59,7 +60,7 @@ const submitConfigurationProposal = async ({ configurations, opts }) => {
         `voting.getSenderAddress ${sender} does not match the actual wallet sender: ${wallet.address}`
       );
     }
-    const keys = configurations.keys.split(",").map((k) => sha3(k));
+    const keys = configurations.keys.split(",").map((k) => getConfigKey(k));
     const values = configurations.values.split(",").map((v) => parseInt(v));
     if (process.env.DEBUG) console.log({ keys, values });
     await contract.submitProposal(
@@ -88,5 +89,6 @@ const processConfigurationProposal = async ({ daoProposalId }) => {
 
   return { daoProposalId };
 };
+
 
 module.exports = { submitConfigurationProposal, processConfigurationProposal };

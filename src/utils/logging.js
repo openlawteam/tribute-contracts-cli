@@ -28,6 +28,7 @@ const logEnvConfigs = (configs, contract) => {
   info(`Network:\t\t${configs.network}`);
   info(`DAO:\t\t\t${configs.contracts.DaoRegistry}`);
   info(`Space:\t\t\t${configs.space}`);
+  info(`TokenAddr:\t\t${configs.tokenAddr}`);
   if (contract) info(`Contract:\t\t${contract}`);
 };
 

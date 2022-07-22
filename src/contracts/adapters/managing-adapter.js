@@ -1,6 +1,4 @@
 const Web3 = require("web3");
-const { ethers } = require("ethers");
-const toBytes32 = ethers.utils.formatBytes32String;
 const { configs } = require("../../../cli-config");
 const { sha3 } = require("tribute-contracts/utils/ContractUtil");
 const { prepareVoteProposalData } = require("@openlaw/snapshot-js-erc712");
@@ -10,6 +8,7 @@ const { submitSnapshotProposal } = require("../../services/snapshot-service");
 const { parseDaoFlags } = require("../core/dao-registry");
 const { warn } = require("../../utils/logging");
 const { isProposalReadyToBeProcessed } = require("./offchain-voting-adapter");
+const { getConfigKey } = require("../../utils/dao-configs");
 
 const submitManagingProposal = async ({
   adapterName,
@@ -18,7 +17,7 @@ const submitManagingProposal = async ({
   keys,
   values,
 }) => {
-  const configKeys = keys ? keys.split(",").map((k) => sha3(k)) : [];
+  const configKeys = keys ? keys.split(",").map((k) => getConfigKey(k)) : [];
   const configValues = values ? values.split(",").map((v) => v) : [];
   const configAclFlags = parseDaoFlags(aclFlags);
 

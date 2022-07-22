@@ -9,7 +9,6 @@ const {
 } = require("../../../utils/logging");
 const {
   sha3,
-  ZERO_ADDRESS,
 } = require("tribute-contracts/utils/ContractUtil");
 const { configs } = require("../../../../cli-config");
 const {

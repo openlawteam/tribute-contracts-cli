@@ -9,6 +9,8 @@ if (!process.env.SNAPSHOT_HUB_API_URL)
   throw Error("Missing SNAPSHOT_HUB_API_URL env var");
 if (!process.env.TRUFFLE_MNEMONIC)
   throw Error("Missing env var: <TRUFFLE_MNEMONIC>");
+if (!process.env.TOKEN_ADDR)
+  throw Error("Missing env var: <TOKEN_ADDR>");
 
 const configs = {
   network: process.env.ETHEREUM_NETWORK,
@@ -22,6 +24,7 @@ const configs = {
   ganacheUrl: process.env.GANACHE_URL
     ? process.env.GANACHE_URL
     : "http://localhost:7545",
+  tokenAddr: process.env.TOKEN_ADDR
 };
 
 module.exports = { configs };
