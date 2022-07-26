@@ -29,7 +29,7 @@ export const submitAndProcessProposal = async ({
   const configValues = numericConfigValues ? numericConfigValues : [];
   const configAclFlags = aclFlags ? new Array(...aclFlags) : new Array();
   const { extensionAddresses, extensionAclFlags } = Object.values(
-    extensions
+    extensions ?? {}
   ).reduce(
     (acc, e) => {
       acc.extensionAddresses.push(e.data.address);
@@ -92,8 +92,7 @@ export const submitAndProcessProposal = async ({
   );
 
   if (tx.wait) {
-    const result = await tx.wait();
-    console.log({result})
+    await tx.wait();
   }
 
   const updatedAddress = await getAdapterAddress(adapterOrExtensionId);
