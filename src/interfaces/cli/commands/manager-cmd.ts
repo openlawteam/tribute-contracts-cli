@@ -1,7 +1,10 @@
 import inquirer from "inquirer";
 import { ethers } from "ethers";
 import { daoAccessFlags } from "tribute-contracts/utils/access-control-util.js";
-import { extensionsIdsMap } from "tribute-contracts/utils/dao-ids-util.js";
+import {
+  adaptersIdsMap,
+  extensionsIdsMap,
+} from "tribute-contracts/utils/dao-ids-util.js";
 import { availableExtensions } from "../../../contracts/adapters/managing-adapter.js";
 import {
   success,
@@ -12,8 +15,18 @@ import {
 } from "../../../utils/logging.js";
 import { configs } from "../../../../cli-config.js";
 import { collectConfigs } from "./configuration-cmd.js";
-import { getExtensionAddress } from "../../../contracts/core/dao-registry.js";
+import {
+  getAdapterAccessToExtension,
+  getAdapterAddress,
+  getExtensionAddress,
+} from "../../../contracts/core/dao-registry.js";
 import { submitAndProcessProposal } from "../../../contracts/adapters/manager-adapter.js";
+
+enum UpdateType {
+  adapter = "Adapter",
+  extension = "Extension",
+  config = "Configs",
+}
 
 export const managerCommands = (program) => {
   program
@@ -28,12 +41,16 @@ export const managerCommands = (program) => {
             type: "list",
             name: "updateType",
             message: `Which type of contract do you want to update?`,
-            choices: ["Adapter", "Extension", "Configs"],
+            choices: [
+              UpdateType.adapter,
+              UpdateType.extension,
+              UpdateType.config,
+            ],
           },
         ])
         .then(async (answers) => {
           let aclFlags = [];
-          if (answers.updateType !== "Configs") {
+          if (answers.updateType !== UpdateType.config) {
             aclFlags = (
               await inquirer.prompt([
                 {
@@ -51,12 +68,21 @@ export const managerCommands = (program) => {
           return { ...answers, aclFlags };
         })
         .then(async (answers) => {
-          let extensions = {};
-          if (answers.updateType !== "Configs") {
-            extensions = (
-              await promptExtensionAccessFlags(adapterOrExtensionId)
-            ).extensions;
+          let existingAcl;
+          if (answers.updateType === UpdateType.extension) {
+            notice("Reading existing extension ACL...");
+            existingAcl = await getExistingExtensionAccess(
+              adapterOrExtensionId
+            );
+            notice("Existing extension ACL recovered");
           }
+
+          let extensions = {};
+          extensions = (await promptExtensionAccessFlags(adapterOrExtensionId))
+            .extensions;
+          extensions = Object.keys(extensions).length
+            ? extensions
+            : existingAcl;
           return { ...answers, extensions };
         })
         .then(async (answers) => {
@@ -69,7 +95,7 @@ export const managerCommands = (program) => {
           notice(`\n ::: Submitting and Processing Managing proposal...\n`);
           logEnvConfigs(configs);
           info(
-            `Adapter:\t\t${adapterOrExtensionId} @ ${adapterOrExtensionAddress}`
+            `${updateType}:\t\t${adapterOrExtensionId} @ ${adapterOrExtensionAddress}`
           );
           info(`DAO AccessFlags:\t${JSON.stringify(answers.aclFlags)}`);
           info(
@@ -78,7 +104,9 @@ export const managerCommands = (program) => {
             }\n`
           );
           info(
-            `Extensions:\t\t${extensions ? JSON.stringify(extensions) : "n/a"}`
+            `Extension ACLs:\n${
+              extensions ? JSON.stringify(extensions, null, 2) : "n/a"
+            }`
           );
 
           return submitAndProcessProposal({
@@ -96,9 +124,9 @@ export const managerCommands = (program) => {
           success(
             `adapterOrExtension: "${adapterOrExtensionId}" updated to address ${adapterOrExtensionAddress}\n`
           );
-          success(`::: Managing proposal submitted and processed!\n`, true);
+          success(`::: Manager proposal submitted and processed!\n`, true);
         })
-        .catch((err) => error("Error while submitting managing proposal", err));
+        .catch((err) => error("Error while submitting manager proposal", err));
     });
 
   return program;
@@ -137,6 +165,44 @@ const collectExtensionAccessFlags = async (inputs = []) => {
   const { repeat, ...answers } = await inquirer.prompt(prompts);
   const newInputs = [...inputs, answers];
   return repeat ? collectExtensionAccessFlags(newInputs) : newInputs;
+};
+
+const getExistingExtensionAccess = async (extensionId) => {
+  const extensionAddress = getExtensionAddress(extensionId);
+  const extensionFlags = availableExtensions[extensionId];
+
+  const adapterIds = Object.values(adaptersIdsMap);
+  const extensions = adapterIds.reduce(async (acc, adapterId) => {
+    try {
+      const adapterAddress = await getAdapterAddress(adapterId);
+      // assumes the flags are in correct order
+      const enabledFlags = (
+        await Promise.all(
+          extensionFlags.map(async (flag, idx) => {
+            const adapterHasAccess = await getAdapterAccessToExtension(
+              adapterAddress,
+              extensionAddress,
+              idx
+            );
+            return adapterHasAccess ? flag : null;
+          })
+        )
+      ).filter((val) => val != null);
+      if (enabledFlags.length) {
+        (await acc).push({
+          extensionId,
+          data: {
+            address: adapterAddress,
+            flags: enabledFlags,
+          },
+        });
+      }
+    } catch (err) {} // Don't need to do anything if adapter doesn't exist.
+
+    return acc;
+  }, Promise.resolve([]));
+
+  return extensions;
 };
 
 const collectNumericConfigs = async (inputs = []) => {

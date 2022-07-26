@@ -33,3 +33,16 @@ export const getExtensionAddress = async (extensionId) => {
   const { contract } = getContract(CONTRACT_NAME, configs.dao);
   return await contract.getExtensionAddress(sha3(extensionId));
 };
+
+export const getAdapterAccessToExtension = async (
+  adapterAddress,
+  extensionAddress,
+  flag
+) => {
+  const { contract } = getContract(CONTRACT_NAME, configs.dao);
+  return await contract.hasAdapterAccessToExtension(
+    adapterAddress,
+    extensionAddress,
+    flag
+  );
+};
