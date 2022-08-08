@@ -5,7 +5,7 @@
   "type": "commonjs",
   "main": "./index.js",
   "bin": {
-    "trib": "./lib/index.js"
+    "trib": "lib/index.js"
   },
   "directories": {
     "test": "test"
@@ -41,7 +41,7 @@
     "ethers-gcp-kms-signer": "^1.1.2",
     "hardhat": "^2.6.2",
     "inquirer": "^8.1.2",
-    "tribute-contracts": "2.5.0",
+    "tribute-contracts": "2.6.0",
     "truffle": "5.4.6",
     "web3": "1.4.0"
   },

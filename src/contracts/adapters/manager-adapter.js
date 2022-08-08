@@ -29,7 +29,7 @@ export const submitAndProcessProposal = async ({
   const configValues = numericConfigValues ? numericConfigValues : [];
   const configAclFlags = aclFlags ? new Array(...aclFlags) : new Array();
   const { extensionAddresses, extensionAclFlags } = Object.values(
-    extensions
+    extensions ?? {}
   ).reduce(
     (acc, e) => {
       acc.extensionAddresses.push(e.data.address);
@@ -70,7 +70,6 @@ export const submitAndProcessProposal = async ({
     extensionAddresses,
     extensionAclFlags,
   };
-  const proposalId = sha3(configs.dao + nonce.toString());
 
   const signature = await getSignature(
     {
@@ -78,15 +77,13 @@ export const submitAndProcessProposal = async ({
       proposal,
       configs: daoConfigurations,
       nonce,
-      proposalId,
     },
     managerAdapter.address,
     chainId
   );
 
-  await managerAdapter.processSignedProposal(
+  const tx = await managerAdapter.processSignedProposal(
     configs.dao,
-    proposalId,
     proposal,
     daoConfigurations,
     nonce,
@@ -94,8 +91,12 @@ export const submitAndProcessProposal = async ({
     { gasLimit: 2100000 }
   );
 
+  if (tx.wait) {
+    await tx.wait();
+  }
+
   const updatedAddress = await getAdapterAddress(adapterOrExtensionId);
-  return { proposalId, updatedAddress };
+  return { updatedAddress };
 };
 
 const getSignature = async (
@@ -116,7 +117,6 @@ const getSignature = async (
       { name: "proposal", type: "ProposalDetails" },
       { name: "configs", type: "Configuration[]" },
       { name: "nonce", type: "uint256" },
-      { name: "proposalId", type: "bytes32" },
     ],
     ProposalDetails: [
       { name: "adapterOrExtensionId", type: "bytes32" },
