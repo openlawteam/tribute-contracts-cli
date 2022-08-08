@@ -12,8 +12,7 @@ if (!process.env.ETHEREUM_BLOCKCHAIN_API)
   throw Error("Missing ETHEREUM_BLOCKCHAIN_API env var");
 if (!process.env.ETHEREUM_NETWORK)
   throw Error("Missing ETHEREUM_NETWORK env var");
-if (!process.env.TOKEN_ADDR)
-  throw Error("Missing env var: <TOKEN_ADDR>");
+if (!process.env.TOKEN_ADDR) throw Error("Missing env var: <TOKEN_ADDR>");
 
 const configs = {
   dao: process.env.DAO_ADDRESS,
@@ -35,7 +34,7 @@ const configs = {
     keyId: process.env.KMS_KEY_ID,
     keyVersion: process.env.KMS_KEY_VERSION,
   },
-  tokenAddr: process.env.TOKEN_ADDR
+  tokenAddr: process.env.TOKEN_ADDR,
 };
 
 module.exports = { configs };
