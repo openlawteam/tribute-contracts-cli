@@ -7,6 +7,10 @@ import {
   getMemberAddress,
 } from "../../../contracts/core/dao-registry.js";
 import {
+  KycOnboardingKeys,
+  OffchainVotingKeys,
+} from "../../../utils/dao-configs";
+import {
   success,
   notice,
   info,
@@ -90,6 +94,54 @@ export const daoRegistryCommands = (program) => {
           success(`Address: \t\t${data}\n`);
         })
         .catch((err) => error("Error while getting the config address", err));
+    });
+
+  program
+    .command("get-kyc-configs")
+    .description("Gets all the kys configurations from the DAO.")
+    .action(async () => {
+      notice(`\n ::: Get kyc configurations...\n`);
+      logEnvConfigs(configs);
+      info(`Configs: `);
+      return await Promise.all(
+        KycOnboardingKeys.map(async (config) => {
+          if (config.type === "address") {
+            let value = await getDAOConfigAddress(config.name);
+            info(`  ${config.name}: ${value}`);
+            return { name: config.name, value };
+          } else {
+            let value = await getDAOConfig(config.name);
+            info(`  ${config.name}: ${value}`);
+            return { name: config.name, value };
+          }
+        })
+      ).then(() => {
+        success(`\n`, true);
+      });
+    });
+
+  program
+    .command("get-voting-configs")
+    .description("Gets all the voting configurations from the DAO.")
+    .action(async () => {
+      notice(`\n ::: Get voting configurations...\n`);
+      logEnvConfigs(configs);
+      info(`Configs: `);
+      return await Promise.all(
+        OffchainVotingKeys.map(async (config) => {
+          if (config.type === "address") {
+            let value = await getDAOConfigAddress(config.name);
+            info(`  ${config.name}: ${value}`);
+            return { name: config.name, value };
+          } else {
+            let value = await getDAOConfig(config.name);
+            info(`  ${config.name}: ${value}`);
+            return { name: config.name, value };
+          }
+        })
+      ).then(() => {
+        success(`\n`, true);
+      });
     });
 
   return program;
