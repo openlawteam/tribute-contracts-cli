@@ -107,11 +107,15 @@ export const daoRegistryCommands = (program) => {
       return await Promise.all(
         KycOnboardingKeys.map(async (config) => {
           if (config.type === "address") {
-            const value = await (useOldKeys ? getDAOConfigAddress(config.name) : getDAOConfigWithTokenAddrHash(config.name, true));
+            const value = await (useOldKeys
+              ? getDAOConfigAddress(config.name)
+              : getDAOConfigWithTokenAddrHash(config.name, true));
             info(`  ${config.name}: ${value}`);
             return { name: config.name, value };
           } else {
-            const value = await (useOldKeys ? getDAOConfig(config.name) : getDAOConfigWithTokenAddrHash(config.name, false));
+            const value = await (useOldKeys
+              ? getDAOConfig(config.name)
+              : getDAOConfigWithTokenAddrHash(config.name, false));
             info(`  ${config.name}: ${value}`);
             return { name: config.name, value };
           }

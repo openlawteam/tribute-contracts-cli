@@ -1,7 +1,7 @@
 import { sha3 } from "tribute-contracts/utils/contract-util.js";
 import { getContract } from "../../utils/contract.js";
 import { configs } from "../../../cli-config.js";
-import { ethers } from 'ethers';
+import { ethers } from "ethers";
 
 const CONTRACT_NAME = "DaoRegistry";
 
@@ -24,7 +24,9 @@ export const getDAOConfigWithTokenAddrHash = async (configKey, isAddress) => {
     )
   );
   const { contract } = getContract(CONTRACT_NAME, configs.dao);
-  return await (isAddress ? contract.getAddressConfiguration(key) : contract.getConfiguration(key));
+  return await (isAddress
+    ? contract.getAddressConfiguration(key)
+    : contract.getConfiguration(key));
 };
 
 export const getAddressIfDelegated = async (memberAddress) => {
