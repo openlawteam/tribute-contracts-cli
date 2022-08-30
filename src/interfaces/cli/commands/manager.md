@@ -5,7 +5,7 @@
 4. Input configs
 
 ### Updating Configs
-1. `trib manager-submitAndProcessProposal configs 0x0000000000000000000000000000000000000000`
+1. `trib manager-submitAndProcessProposal manager 0x0000000000000000000000000000000000000000`
 2. Which type of contract do you want to update? -> `Configs`
 3. Input configs
 
