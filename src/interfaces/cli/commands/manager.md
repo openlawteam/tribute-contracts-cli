@@ -8,3 +8,7 @@
 1. `trib manager-submitAndProcessProposal configs 0x0000000000000000000000000000000000000000`
 2. Which type of contract do you want to update? -> `Configs`
 3. Input configs
+
+### Get KYC Configs
+- Get configs with new keys: `trib get-kyc-configs` 
+- Get old configs: `trib get-kyc-configs useOldKeys`
