@@ -5,6 +5,7 @@ import {
   getDAOConfig,
   getDAOConfigAddress,
   getMemberAddress,
+  getDAOConfigWithTokenAddrHash,
 } from "../../../contracts/core/dao-registry.js";
 import {
   KycOnboardingKeys,
@@ -97,20 +98,24 @@ export const daoRegistryCommands = (program) => {
     });
 
   program
-    .command("get-kyc-configs")
+    .command("get-kyc-configs [useOldKeys]")
     .description("Gets all the kys configurations from the DAO.")
-    .action(async () => {
+    .action(async (useOldKeys) => {
       notice(`\n ::: Get kyc configurations...\n`);
       logEnvConfigs(configs);
       info(`Configs: `);
       return await Promise.all(
         KycOnboardingKeys.map(async (config) => {
           if (config.type === "address") {
-            let value = await getDAOConfigAddress(config.name);
+            const value = await (useOldKeys
+              ? getDAOConfigAddress(config.name)
+              : getDAOConfigWithTokenAddrHash(config.name, true));
             info(`  ${config.name}: ${value}`);
             return { name: config.name, value };
           } else {
-            let value = await getDAOConfig(config.name);
+            const value = await (useOldKeys
+              ? getDAOConfig(config.name)
+              : getDAOConfigWithTokenAddrHash(config.name, false));
             info(`  ${config.name}: ${value}`);
             return { name: config.name, value };
           }
