@@ -4,27 +4,27 @@ import { configs } from "../../../cli-config.js";
 import { ethers } from 'ethers';
 
 const CONTRACT_NAME = "DaoRegistry";
-const coder = new ethers.utils.AbiCoder();
-export const getDAOConfig = async (configKey, useOldKeys) => {
-  const key = !useOldKeys ? sha3(
-    coder.encode(
-      ["address", "bytes32"],
-      [process.env.TOKEN_ADDR, sha3(configKey)]
-    )
-  ) : sha3(configKey);
+
+export const getDAOConfig = async (configKey) => {
   const { contract } = getContract(CONTRACT_NAME, configs.dao);
-  return await contract.getConfiguration(key);
+  return await contract.getConfiguration(sha3(configKey));
 };
 
-export const getDAOConfigAddress = async (configKey, useOldKeys) => {
-  const key = !useOldKeys ? sha3(
+export const getDAOConfigAddress = async (configKey) => {
+  const { contract } = getContract(CONTRACT_NAME, configs.dao);
+  return await contract.getAddressConfiguration(sha3(configKey));
+};
+
+export const getDAOConfigWithTokenAddrHash = async (configKey, isAddress) => {
+  const coder = new ethers.utils.AbiCoder();
+  const key = sha3(
     coder.encode(
       ["address", "bytes32"],
       [process.env.TOKEN_ADDR, sha3(configKey)]
     )
-  ) : sha3(configKey);
+  );
   const { contract } = getContract(CONTRACT_NAME, configs.dao);
-  return await contract.getAddressConfiguration(key);
+  return await (isAddress ? contract.getAddressConfiguration(key) : contract.getConfiguration(key));
 };
 
 export const getAddressIfDelegated = async (memberAddress) => {
