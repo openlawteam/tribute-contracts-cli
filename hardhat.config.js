@@ -13,9 +13,9 @@ module.exports = {
         path: "m/44'/60'/0'/0",
       },
     },
-    rinkeby: {
+    goerli: {
       url: configs.ethBlockchainApi,
-      network_id: 4,
+      network_id: 5,
       skipDryRun: true,
       networkCheckTimeout: 10000,
       deploymentPollingInterval: 10000,
