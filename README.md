@@ -4,50 +4,50 @@
 
 In the root folder of the project, create the `.env` file, and set the env vars:
 
-  ```
-  ##
-  # The DAO Address to interact with
-  DAO_ADDRESS=0x...
-  
-  ##
-  # Infura API KEY or Alchemy API KEY. Pick one.
-  INFURA_KEY=
-  ALCHEMY_KEY=
+```
+##
+# The DAO Address to interact with
+DAO_ADDRESS=0x...
 
-  ##
-  # 12 word seed phrase from your wallet or the account private key
-  MNEMONIC_OR_PRIVATE_KEY=...
+##
+# Infura API KEY or Alchemy API KEY. Pick one.
+INFURA_KEY=
+ALCHEMY_KEY=
 
-  ##
-  # The snapshot-hub URL to connect
-  SNAPSHOT_HUB_API_URL=http://...
+##
+# 12 word seed phrase from your wallet or the account private key
+MNEMONIC_OR_PRIVATE_KEY=...
 
-  ##
-  # The space name defined in the Snapshot Hub API
-  SNAPSHOT_HUB_SPACE=...
+##
+# The snapshot-hub URL to connect
+SNAPSHOT_HUB_API_URL=http://...
 
-  ##
-  # Enable DEBUG to see the logs of the CLI interactions with SnapshotHub and DAO
-  DEBUG=false
+##
+# The space name defined in the Snapshot Hub API
+SNAPSHOT_HUB_SPACE=...
 
-  ## 
-  # The API that you are using to connect to Ethereum Blockchain
-  # 
-  # ALCHEMY Mainnet: https://eth-mainnet.alchemyapi.io/v2/[YOUR_ALCHEMY_API_KEY]
-  # ALCHEMY Rinkeby: https://eth-rinkeby.alchemyapi.io/v2/[YOUR_ALCHEMY_API_KEY]
-  #
-  # INFURA Mainnet: https://mainnet.infura.io/v3/[YOUR_INFURA_API_KEY]
-  # INFURA Rinkeby: https://rinkeby.infura.io/v3/[YOUR_INFURA_API_KEY]
-  ETHEREUM_BLOCKCHAIN_API=...
+##
+# Enable DEBUG to see the logs of the CLI interactions with SnapshotHub and DAO
+DEBUG=false
 
-  ## 
-  # The Ethereum Network which CLI should interact with: ganache, rinkeby, mainnet
-  ETHEREUM_NETWORK=..
+##
+# The API that you are using to connect to Ethereum Blockchain
+#
+# ALCHEMY Mainnet: https://eth-mainnet.alchemyapi.io/v2/[YOUR_ALCHEMY_API_KEY]
+# ALCHEMY Goerli: https://eth-goerli.alchemyapi.io/v2/[YOUR_ALCHEMY_API_KEY]
+#
+# INFURA Mainnet: https://mainnet.infura.io/v3/[YOUR_INFURA_API_KEY]
+# INFURA Goerli: https://goerli.infura.io/v3/[YOUR_INFURA_API_KEY]
+ETHEREUM_BLOCKCHAIN_API=...
 
-  ##
-  # The token used for onboarding, typically ETH (0x0000000000000000000000000000000000000000)
-  TOKEN_ADDR=0x...
-  ```
+##
+# The Ethereum Network which CLI should interact with: ganache, goerli, mainnet
+ETHEREUM_NETWORK=..
+
+##
+# The token used for onboarding, typically ETH (0x0000000000000000000000000000000000000000)
+TOKEN_ADDR=0x...
+```
 
 ### Install
 
@@ -60,6 +60,7 @@ In the root folder of the project, create the `.env` file, and set the env vars:
 ### Available Commands
 
 > trib --help
+
 ### Version Compatibility
 
 |                                        CLI                                         |                                   Snapshot-JS                                   |                                   Contracts                                    |                                      Snapshot Hub                                       |
