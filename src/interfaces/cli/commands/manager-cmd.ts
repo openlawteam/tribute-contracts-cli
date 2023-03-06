@@ -71,10 +71,15 @@ export const managerCommands = (program) => {
           let existingAcl;
           if (answers.updateType === UpdateType.extension) {
             notice("Reading existing extension ACL...");
-            existingAcl = await getExistingExtensionAccess(
-              adapterOrExtensionId
-            );
-            notice("Existing extension ACL recovered");
+            try {
+              existingAcl = await getExistingExtensionAccess(
+                adapterOrExtensionId
+              );
+              notice("Existing extension ACL recovered");
+            } catch (err) {
+              notice("COuld not recover existing ACL");
+            }
+
           }
 
           let extensions = {};
@@ -168,7 +173,7 @@ const collectExtensionAccessFlags = async (inputs = []) => {
 };
 
 const getExistingExtensionAccess = async (extensionId) => {
-  const extensionAddress = getExtensionAddress(extensionId);
+  const extensionAddress = await getExtensionAddress(extensionId);
   const extensionFlags = availableExtensions[extensionId];
 
   const adapterIds = Object.values(adaptersIdsMap);
