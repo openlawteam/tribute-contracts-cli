@@ -22,7 +22,7 @@ import {
 } from "../../../contracts/core/dao-registry.js";
 import { submitAndProcessProposal } from "../../../contracts/adapters/manager-adapter.js";
 
-enum UpdateType {
+export enum UpdateType {
   adapter = "Adapter",
   extension = "Extension",
   config = "Configs",
