@@ -55,8 +55,7 @@ export const managerCommands = (program) => {
               await inquirer.prompt([
                 {
                   type: "checkbox",
-                  message: (a) =>
-                    `Which DAO permissions does the ${a.updateType} need?`,
+                  message: (a) => `Which DAO permissions does the ${answers.updateType} need?`,
                   name: "aclFlags",
                   choices: daoAccessFlags.map((f) =>
                     Object.assign({ name: f })
@@ -77,18 +76,17 @@ export const managerCommands = (program) => {
               );
               notice("Existing extension ACL recovered");
             } catch (err) {
-              notice("COuld not recover existing ACL");
+              notice("Could not recover existing ACL or the extension does not have any ACL. Check the contracts.config.ts file.");
             }
-
           }
 
-          let extensions = {};
-          extensions = (await promptExtensionAccessFlags(adapterOrExtensionId))
-            .extensions;
-          extensions = Object.keys(extensions).length
-            ? extensions
-            : existingAcl;
-          return { ...answers, extensions };
+          const { extensions: extensionsACLs } = await promptExtensionAccessFlags(adapterOrExtensionId);
+          return {
+            ...answers,
+            extensions: Object.keys(extensionsACLs).length > 0
+              ? extensionsACLs
+              : existingAcl
+          };
         })
         .then(async (answers) => {
           const { updateType, aclFlags, extensions } = answers;
@@ -104,13 +102,11 @@ export const managerCommands = (program) => {
           );
           info(`DAO AccessFlags:\t${JSON.stringify(answers.aclFlags)}`);
           info(
-            `DAO Configurations:\t${
-              configurations ? JSON.stringify(configurations) : "n/a"
+            `DAO Configurations:\t${configurations ? JSON.stringify(configurations) : "n/a"
             }\n`
           );
           info(
-            `Extension ACLs:\n${
-              extensions ? JSON.stringify(extensions, null, 2) : "n/a"
+            `Extension ACLs:\n${extensions ? JSON.stringify(extensions, null, 2) : "n/a"
             }`
           );
 
@@ -202,7 +198,7 @@ const getExistingExtensionAccess = async (extensionId) => {
           },
         });
       }
-    } catch (err) {} // Don't need to do anything if adapter doesn't exist.
+    } catch (err) { } // Don't need to do anything if adapter doesn't exist.
 
     return acc;
   }, Promise.resolve([]));
