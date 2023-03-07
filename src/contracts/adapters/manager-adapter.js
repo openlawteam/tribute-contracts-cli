@@ -9,7 +9,10 @@ import { getAdapter } from "../../utils/contract.js";
 import { parseConfigs } from "./configuration-adapter.js";
 import { GcpKmsSigner, TypedDataVersion } from "ethers-gcp-kms-signer";
 import { availableExtensions } from "./managing-adapter";
-import { getAdapterAddress, getExtensionAddress } from "../core/dao-registry.js";
+import {
+  getAdapterAddress,
+  getExtensionAddress,
+} from "../core/dao-registry.js";
 import { UpdateType } from "../../interfaces/cli/commands/manager-cmd.js";
 
 const CONTRACT_NAME = "Manager";
@@ -95,9 +98,8 @@ export const submitAndProcessProposal = async ({
   if (tx.wait) {
     await tx.wait();
   }
- 
-  return {}
-  
+
+  return {};
 };
 
 const getSignature = async (
