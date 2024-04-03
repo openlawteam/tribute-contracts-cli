@@ -34,14 +34,14 @@ DEBUG=false
 # The API that you are using to connect to Ethereum Blockchain
 #
 # ALCHEMY Mainnet: https://eth-mainnet.alchemyapi.io/v2/[YOUR_ALCHEMY_API_KEY]
-# ALCHEMY Goerli: https://eth-goerli.alchemyapi.io/v2/[YOUR_ALCHEMY_API_KEY]
+# ALCHEMY Polygon: https://polygon-mainnet.alchemyapi.io/v2/[YOUR_ALCHEMY_API_KEY]
 #
 # INFURA Mainnet: https://mainnet.infura.io/v3/[YOUR_INFURA_API_KEY]
-# INFURA Goerli: https://goerli.infura.io/v3/[YOUR_INFURA_API_KEY]
+# INFURA Polygon: https://polygon-mainnet.io/v3/[YOUR_INFURA_API_KEY]
 ETHEREUM_BLOCKCHAIN_API=...
 
 ##
-# The Ethereum Network which CLI should interact with: ganache, goerli, mainnet
+# The Ethereum Network which CLI should interact with: ganache, polygon, mainnet
 ETHEREUM_NETWORK=..
 
 ##
