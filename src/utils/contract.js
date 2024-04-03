@@ -24,7 +24,7 @@ const getProvider = (network) => {
     throw new Error("Unable to get the provider due to invalid network");
 
   switch (network) {
-    case "goerli":
+    case "polygon":
     case "mainnet": {
       if (configs.alchemyApiKey)
         return new ethers.providers.AlchemyProvider(
