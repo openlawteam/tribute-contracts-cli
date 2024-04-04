@@ -28,12 +28,12 @@ const getProvider = (network) => {
     case "mainnet": {
       if (configs.alchemyApiKey)
         return new ethers.providers.AlchemyProvider(
-          network,
+          network === 'polygon' ? 'matic' : network,
           configs.alchemyApiKey
         );
       if (configs.infuraApiKey)
         return new ethers.providers.InfuraProvider(
-          network,
+          network === 'polygon' ? 'matic' : network,
           configs.infuraApiKey
         );
 
