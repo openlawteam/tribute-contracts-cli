@@ -37,12 +37,12 @@
     "esm": "^3.2.25",
     "eth-sig-util": "3.0.1",
     "ethereumjs-util": "7.1.0",
-    "ethers": "5.4.5",
+    "ethers": "5.7.2",
     "ethers-gcp-kms-signer": "^1.1.2",
-    "hardhat": "^2.6.2",
+    "hardhat": "2.12.5",
     "inquirer": "^8.1.2",
     "tribute-contracts": "2.6.0",
-    "truffle": "5.4.6",
+    "truffle": "5.11.5",
     "web3": "1.4.0"
   },
   "devDependencies": {
