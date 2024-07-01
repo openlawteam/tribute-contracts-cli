@@ -35,7 +35,6 @@ const configs = {
     keyVersion: process.env.KMS_KEY_VERSION,
   },
   tokenAddr: process.env.TOKEN_ADDR,
-  gasMultiplier: process.env.GAS_MULTIPLIER || 1,
 };
 
 module.exports = { configs };

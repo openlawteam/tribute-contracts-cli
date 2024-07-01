@@ -19,7 +19,6 @@ module.exports = {
       skipDryRun: true,
       networkCheckTimeout: 10000,
       deploymentPollingInterval: 10000,
-      gasMultiplier: parseInt(configs.gasMultiplier),
     },
     mainnet: {
       url: configs.ethBlockchainApi,
